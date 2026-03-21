@@ -13,7 +13,7 @@ export default defineConfig(({ mode }) => ({
     },
     proxy: {
       "/api": {
-        target: "http://localhost",   // Apache/XAMPP runs on port 80
+        target: "http://localhost:5000",  // Node/Express backend
         changeOrigin: true,
         secure: false,
       },

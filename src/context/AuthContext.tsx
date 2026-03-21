@@ -29,10 +29,10 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const API = "/api/auth";
 
-async function apiFetch(path: string, body?: object) {
+async function apiFetch(path: string, body?: object, method?: string) {
   const res = await fetch(`${API}${path}`, {
-    method: body ? "POST" : "GET",
-    credentials: "include",                          // send session cookie
+    method: method ?? (body ? "POST" : "GET"),
+    credentials: "include",
     headers: { "Content-Type": "application/json" },
     body: body ? JSON.stringify(body) : undefined,
   });
@@ -43,28 +43,28 @@ async function apiFetch(path: string, body?: object) {
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser]       = useState<AuthUser | null>(null);
-  const [loading, setLoading] = useState(true);   // true until session check done
+  const [loading, setLoading] = useState(true);
 
   // Check existing session on app load
   useEffect(() => {
-    apiFetch("/me.php")
+    apiFetch("/me")
       .then((d) => setUser(d.user))
-      .catch(() => setUser(null))          // silently treat 401/network error as logged-out
+      .catch(() => setUser(null))
       .finally(() => setLoading(false));
   }, []);
 
   const login = useCallback(async (emailOrPhone: string, password: string) => {
-    const data = await apiFetch("/login.php", { email: emailOrPhone, password });
+    const data = await apiFetch("/login", { email: emailOrPhone, password });
     setUser(data.user);
   }, []);
 
   const register = useCallback(async (formData: RegisterData) => {
-    const data = await apiFetch("/register.php", formData);
+    const data = await apiFetch("/register", formData);
     setUser(data.user);
   }, []);
 
   const logout = useCallback(async () => {
-    await apiFetch("/logout.php", {});
+    await apiFetch("/logout", {}, "POST");
     setUser(null);
   }, []);
 
