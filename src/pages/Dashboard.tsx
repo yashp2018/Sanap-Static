@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Package, Clock, Download, User, LogOut, Eye, MapPin, Phone, Mail, ArrowRight, ChevronRight } from "lucide-react";
+import { Package, Clock, Download, User, LogOut, Eye, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "@/context/AuthContext";
 
 const demoOrders = [
   { id: "SNH-4521", date: "2025-01-15", items: "Arka Rakshak (Tomato) × 15,000", total: "₹48,000", status: "delivered", payment: "Razorpay" },
@@ -21,15 +22,22 @@ const statusMap: Record<string, string> = {
 };
 
 export default function Dashboard() {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<"orders" | "profile">("orders");
 
   const [profile, setProfile] = useState({
-    name: "Rajesh Patil",
-    phone: "+91 98765 43210",
-    email: "rajesh.patil@gmail.com",
-    address: "Farm No. 42, Village Road, Nashik, Maharashtra 422003",
+    name: user?.name || "",
+    phone: user?.phone || "",
+    email: user?.email || "",
+    address: "",
     state: "Maharashtra",
   });
+
+  const handleLogout = async () => {
+    await logout();
+    navigate("/");
+  };
 
   return (
     <div className="min-h-screen" id="user-dashboard">
@@ -39,16 +47,16 @@ export default function Dashboard() {
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div>
               <p className="text-primary-foreground/60 text-sm mb-1">Welcome back,</p>
-              <h1 className="font-display text-3xl md:text-4xl font-bold">{profile.name}</h1>
-              <p className="text-primary-foreground/70 mt-1">{profile.phone}</p>
+              <h1 className="font-display text-3xl md:text-4xl font-bold">{user?.name}</h1>
+              <p className="text-primary-foreground/70 mt-1">{user?.phone}</p>
             </div>
             <div className="flex gap-3">
               <Link to="/products" className="gradient-gold text-accent-foreground px-5 py-2.5 rounded-full font-semibold text-sm hover:shadow-gold transition-all btn-ripple">
                 New Order
               </Link>
-              <Link to="/" className="bg-primary-foreground/10 border border-primary-foreground/20 text-primary-foreground px-5 py-2.5 rounded-full font-semibold text-sm hover:bg-primary-foreground/20 transition-all flex items-center gap-2">
+              <button onClick={handleLogout} className="bg-primary-foreground/10 border border-primary-foreground/20 text-primary-foreground px-5 py-2.5 rounded-full font-semibold text-sm hover:bg-primary-foreground/20 transition-all flex items-center gap-2">
                 <LogOut className="w-4 h-4" /> Logout
-              </Link>
+              </button>
             </div>
           </div>
         </div>

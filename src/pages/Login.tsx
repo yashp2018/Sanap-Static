@@ -3,25 +3,36 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Leaf, Eye, EyeOff, Mail, Lock, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "@/context/AuthContext";
 
 export default function Login() {
   const navigate = useNavigate();
+  const { login, user } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [form, setForm] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  // Already logged in — redirect
+  if (user) {
+    navigate(user.role === "admin" ? "/admin" : "/dashboard", { replace: true });
+  }
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.email || !form.password) {
       toast.error("Please fill in all fields");
       return;
     }
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
+    try {
+      await login(form.email, form.password);
       toast.success("Login successful!");
       navigate("/dashboard");
-    }, 1000);
+    } catch (err: any) {
+      toast.error(err.message || "Login failed");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

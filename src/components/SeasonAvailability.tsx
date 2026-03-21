@@ -1,33 +1,38 @@
-import { Check, X } from "lucide-react";
+import { Check, Minus } from "lucide-react";
 
 interface SeasonAvailabilityProps {
-  availableMonths: number[]; // Array of month numbers (0-11)
+  availableMonths: number[];
 }
 
 const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 export default function SeasonAvailability({ availableMonths }: SeasonAvailabilityProps) {
   return (
-    <div className="bg-muted/30 rounded-xl p-4">
-      <h4 className="text-sm font-semibold text-foreground mb-3">Season/Availability:</h4>
-      <div className="grid grid-cols-12 gap-1">
-        {months.map((month, index) => {
-          const isAvailable = availableMonths.includes(index);
-          return (
-            <div key={month} className="flex flex-col items-center">
-              <div
-                className={`w-full aspect-square rounded-lg flex items-center justify-center text-xs font-medium transition-colors ${
-                  isAvailable
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted text-muted-foreground"
-                }`}
-              >
-                {isAvailable ? <Check className="w-3 h-3" /> : <X className="w-3 h-3" />}
-              </div>
-              <span className="text-[10px] text-muted-foreground mt-1">{month}</span>
+    <div className="rounded-xl border border-primary/20 bg-secondary/30 p-3">
+      <p className="text-sm font-semibold text-primary mb-2">Season/Availability:</p>
+      <div className="rounded-lg overflow-hidden border border-primary/30">
+        {/* Month Headers */}
+        <div className="grid grid-cols-12">
+          {months.map((month) => (
+            <div key={month} className="bg-primary text-primary-foreground text-center text-[10px] font-bold py-1.5 border-r border-primary-dark/30 last:border-r-0">
+              {month}
             </div>
-          );
-        })}
+          ))}
+        </div>
+        {/* Availability Row */}
+        <div className="grid grid-cols-12 bg-white">
+          {months.map((_, index) => {
+            const available = availableMonths.includes(index);
+            return (
+              <div key={index} className="flex items-center justify-center py-2 border-r border-border/50 last:border-r-0">
+                {available
+                  ? <Check className="w-3.5 h-3.5 text-primary font-bold" strokeWidth={3} />
+                  : <Minus className="w-3.5 h-3.5 text-muted-foreground" strokeWidth={2} />
+                }
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );

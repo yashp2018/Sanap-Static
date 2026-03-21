@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { ShoppingCart, Menu, X, Phone, Leaf, User, ChevronDown, MapPin, Mail, Globe } from "lucide-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { ShoppingCart, Menu, X, Phone, User, ChevronDown, Mail, Globe, LogOut, LayoutDashboard } from "lucide-react";
 import { useCart } from "@/context/CartContext";
+import { useAuth } from "@/context/AuthContext";
 import { categories } from "@/data/products";
 import { motion, AnimatePresence } from "framer-motion";
 import logo from "@/assets/S-LOGO.png";
@@ -11,9 +12,12 @@ export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [langDropdownOpen, setLangDropdownOpen] = useState(false);
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [language, setLanguage] = useState("en");
   const { totalItems } = useCart();
+  const { user, logout } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 50);
@@ -22,6 +26,11 @@ export default function Header() {
   }, []);
 
   useEffect(() => setMobileOpen(false), [location]);
+
+  const handleLogout = async () => {
+    await logout();
+    navigate("/");
+  };
 
   const isHome = location.pathname === "/";
   const isAdmin = location.pathname.startsWith("/admin");
@@ -201,9 +210,48 @@ export default function Header() {
 
           {/* Actions */}
           <div className="flex items-center gap-3">
-            <Link to="/login" className="hidden md:flex items-center gap-1.5 text-sm font-medium text-foreground hover:text-primary transition-colors">
-              <User className="w-4 h-4" />
-            </Link>
+            {/* User menu */}
+            <div className="relative hidden md:block" onMouseLeave={() => setUserDropdownOpen(false)}>
+              {user ? (
+                <button
+                  onMouseEnter={() => setUserDropdownOpen(true)}
+                  className="flex items-center gap-2 text-sm font-medium text-foreground hover:text-primary transition-colors px-2 py-1 rounded-lg hover:bg-muted"
+                >
+                  <div className="w-7 h-7 rounded-full gradient-cta flex items-center justify-center text-primary-foreground text-xs font-bold">
+                    {user.name.charAt(0).toUpperCase()}
+                  </div>
+                  <span className="max-w-[80px] truncate">{user.name.split(' ')[0]}</span>
+                  <ChevronDown className={`w-3 h-3 transition-transform ${userDropdownOpen ? 'rotate-180' : ''}`} />
+                </button>
+              ) : (
+                <Link to="/login" className="flex items-center gap-1.5 text-sm font-medium text-foreground hover:text-primary transition-colors">
+                  <User className="w-4 h-4" /> Login
+                </Link>
+              )}
+              <AnimatePresence>
+                {user && userDropdownOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -5 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute right-0 top-full mt-1 w-44 bg-white rounded-xl shadow-lg border border-border/30 overflow-hidden z-[100]"
+                  >
+                    <Link to="/dashboard" className="flex items-center gap-2 px-4 py-3 text-sm text-foreground hover:bg-muted transition-colors">
+                      <LayoutDashboard className="w-4 h-4 text-primary" /> My Dashboard
+                    </Link>
+                    {user.role === 'admin' && (
+                      <Link to="/admin" className="flex items-center gap-2 px-4 py-3 text-sm text-foreground hover:bg-muted transition-colors border-t border-border/20">
+                        <LayoutDashboard className="w-4 h-4 text-accent" /> Admin Panel
+                      </Link>
+                    )}
+                    <button onClick={handleLogout} className="w-full flex items-center gap-2 px-4 py-3 text-sm text-destructive hover:bg-destructive/5 transition-colors border-t border-border/20">
+                      <LogOut className="w-4 h-4" /> Logout
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
 
             <Link
               to="/cart"

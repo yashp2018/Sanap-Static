@@ -3,14 +3,16 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Leaf, Eye, EyeOff, Mail, Lock, User, Phone, MapPin, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "@/context/AuthContext";
 
 export default function Register() {
   const navigate = useNavigate();
+  const { register } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [form, setForm] = useState({ name: "", phone: "", email: "", password: "", confirmPassword: "", address: "", city: "", state: "Maharashtra" });
   const [loading, setLoading] = useState(false);
 
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.name || !form.phone || !form.password) {
       toast.error("Please fill all required fields");
@@ -25,11 +27,21 @@ export default function Register() {
       return;
     }
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
+    try {
+      await register({
+        name: form.name,
+        phone: form.phone,
+        email: form.email || undefined,
+        password: form.password,
+        address: form.address || undefined,
+      });
       toast.success("Registration successful! Welcome aboard.");
       navigate("/dashboard");
-    }, 1000);
+    } catch (err: any) {
+      toast.error(err.message || "Registration failed");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
