@@ -36,6 +36,8 @@ async function apiFetch(path: string, body?: object, method?: string) {
     headers: { "Content-Type": "application/json" },
     body: body ? JSON.stringify(body) : undefined,
   });
+  // 401 on /me is expected when not logged in — don't throw, just return null
+  if (res.status === 401) return null;
   const data = await res.json();
   if (!data.success) throw new Error(data.message || "Request failed");
   return data;
@@ -48,7 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Check existing session on app load
   useEffect(() => {
     apiFetch("/me")
-      .then((d) => setUser(d.user))
+      .then((d) => setUser(d?.user ?? null))
       .catch(() => setUser(null))
       .finally(() => setLoading(false));
   }, []);
