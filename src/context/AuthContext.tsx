@@ -49,7 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     apiFetch("/me.php")
       .then((d) => setUser(d.user))
-      .catch(() => setUser(null))
+      .catch(() => setUser(null))          // silently treat 401/network error as logged-out
       .finally(() => setLoading(false));
   }, []);
 
