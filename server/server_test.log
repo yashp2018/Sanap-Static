@@ -1,0 +1,4 @@
+[dotenv@17.3.1] injecting env (9) from .env -- tip: ⚙️  override existing env vars with { override: true }
+✅ Server running on http://localhost:5000
+   NODE_ENV : development
+   DB       : nursery_db@localhost:5432

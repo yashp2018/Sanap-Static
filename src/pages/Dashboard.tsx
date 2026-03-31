@@ -1,22 +1,15 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Package, Clock, Download, User, LogOut, Eye, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
-
-const demoOrders = [
-  { id: "SNH-4521", date: "2025-01-15", items: "Arka Rakshak (Tomato) × 15,000", total: "₹48,000", status: "delivered", payment: "Razorpay" },
-  { id: "SNH-4498", date: "2025-01-08", items: "VNR 312 (Chili) × 30,000", total: "₹63,000", status: "shipped", payment: "Bank Transfer" },
-  { id: "SNH-4475", date: "2024-12-20", items: "Namdhari 600 (Tomato) × 20,000", total: "₹72,000", status: "delivered", payment: "COD" },
-  { id: "SNH-4410", date: "2024-12-01", items: "Sugar Queen (Watermelon) × 15,000", total: "₹43,500", status: "delivered", payment: "Razorpay" },
-  { id: "SNH-4390", date: "2024-11-15", items: "Mahyco Super (Brinjal) × 25,000", total: "₹46,250", status: "cancelled", payment: "COD" },
-];
+import { getOrders, ApiOrder } from "@/services/api";
 
 const statusMap: Record<string, string> = {
-  pending: "badge-pending",
+  pending:   "badge-pending",
   confirmed: "badge-confirmed",
-  shipped: "badge-shipped",
+  shipped:   "badge-shipped",
   delivered: "badge-delivered",
   cancelled: "badge-cancelled",
 };
@@ -25,19 +18,37 @@ export default function Dashboard() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<"orders" | "profile">("orders");
+  const [orders, setOrders] = useState<ApiOrder[]>([]);
+  const [loadingOrders, setLoadingOrders] = useState(true);
 
   const [profile, setProfile] = useState({
-    name: user?.name || "",
-    phone: user?.phone || "",
-    email: user?.email || "",
+    name:    user?.name  || "",
+    phone:   user?.phone || "",
+    email:   user?.email || "",
     address: "",
-    state: "Maharashtra",
+    state:   "Maharashtra",
   });
+
+  useEffect(() => {
+    getOrders()
+      .then(r => setOrders(r.data))
+      .catch(() => setOrders([]))
+      .finally(() => setLoadingOrders(false));
+  }, []);
 
   const handleLogout = async () => {
     await logout();
     navigate("/");
   };
+
+  const handleProfileSave = async () => {
+    // API endpoint for profile update can be wired here when backend supports it
+    toast.success("Profile updated!");
+  };
+
+  const totalSpent = orders.reduce((s, o) => s + Number(o.total_amount), 0);
+  const totalPlants = orders.reduce((s, o) => s + Number(o.total_plants), 0);
+  const activeOrders = orders.filter(o => !["delivered", "cancelled"].includes(o.order_status)).length;
 
   return (
     <div className="min-h-screen" id="user-dashboard">
@@ -66,10 +77,10 @@ export default function Dashboard() {
         {/* Quick Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
           {[
-            { label: "Total Orders", value: "12", icon: Package },
-            { label: "Active Orders", value: "1", icon: Clock },
-            { label: "Total Spent", value: "₹2.7L", icon: ArrowRight },
-            { label: "Plants Ordered", value: "1,05,000", icon: ArrowRight },
+            { label: "Total Orders",   value: orders.length.toString(),                          icon: Package },
+            { label: "Active Orders",  value: activeOrders.toString(),                           icon: Clock },
+            { label: "Total Spent",    value: totalSpent > 0 ? `₹${(totalSpent/100000).toFixed(1)}L` : "₹0", icon: ArrowRight },
+            { label: "Plants Ordered", value: totalPlants > 0 ? totalPlants.toLocaleString() : "0", icon: ArrowRight },
           ].map((stat, i) => (
             <motion.div
               key={stat.label}
@@ -85,10 +96,10 @@ export default function Dashboard() {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-2 mb-8 border-b border-border pb-0">
+        <div className="flex gap-2 mb-8 border-b border-border">
           {[
-            { id: "orders" as const, label: "Order History", icon: Package },
-            { id: "profile" as const, label: "My Profile", icon: User },
+            { id: "orders"  as const, label: "Order History", icon: Package },
+            { id: "profile" as const, label: "My Profile",    icon: User },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -107,47 +118,63 @@ export default function Dashboard() {
         {/* Orders Tab */}
         {activeTab === "orders" && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-            <div className="bg-card rounded-2xl border border-border/50 shadow-card overflow-hidden" id="orders-table">
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-border bg-muted/50">
-                      <th className="text-left px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Order ID</th>
-                      <th className="text-left px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Date</th>
-                      <th className="text-left px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Items</th>
-                      <th className="text-left px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Total</th>
-                      <th className="text-left px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Payment</th>
-                      <th className="text-left px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Status</th>
-                      <th className="text-left px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {demoOrders.map((order) => (
-                      <tr key={order.id} className="border-b border-border/50 hover:bg-muted/30 transition-colors" id={`order-${order.id}`}>
-                        <td className="px-6 py-4 text-sm font-semibold text-primary">{order.id}</td>
-                        <td className="px-6 py-4 text-sm text-muted-foreground">{order.date}</td>
-                        <td className="px-6 py-4 text-sm text-foreground max-w-[200px] truncate">{order.items}</td>
-                        <td className="px-6 py-4 text-sm font-semibold text-foreground">{order.total}</td>
-                        <td className="px-6 py-4 text-xs text-muted-foreground">{order.payment}</td>
-                        <td className="px-6 py-4">
-                          <span className={statusMap[order.status] || "badge-pending"}>
-                            {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex gap-2">
-                            <button className="text-xs text-primary hover:underline flex items-center gap-1" title="View"><Eye className="w-3 h-3" /> View</button>
-                            {order.status === "delivered" && (
-                              <button className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1" title="Download"><Download className="w-3 h-3" /> Invoice</button>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+            {loadingOrders ? (
+              <div className="flex justify-center py-20">
+                <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
               </div>
-            </div>
+            ) : orders.length === 0 ? (
+              <div className="text-center py-20 bg-card rounded-2xl border border-border/50">
+                <p className="text-5xl mb-4">📦</p>
+                <h3 className="font-display text-xl font-bold text-foreground mb-2">No orders yet</h3>
+                <p className="text-muted-foreground mb-4">Start by browsing our product catalog</p>
+                <Link to="/products" className="text-primary font-semibold hover:underline">Browse Products →</Link>
+              </div>
+            ) : (
+              <div className="bg-card rounded-2xl border border-border/50 shadow-card overflow-hidden" id="orders-table">
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-border bg-muted/50">
+                        {["Order ID", "Date", "Items", "Total", "Payment", "Status", "Actions"].map(h => (
+                          <th key={h} className="text-left px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {orders.map((order) => (
+                        <tr key={order.id} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
+                          <td className="px-6 py-4 text-sm font-semibold text-primary">{order.order_number}</td>
+                          <td className="px-6 py-4 text-sm text-muted-foreground">{new Date(order.created_at).toLocaleDateString("en-IN")}</td>
+                          <td className="px-6 py-4 text-sm text-foreground max-w-[200px] truncate">
+                            {order.items?.[0] ? `${order.items[0].variety_name} × ${order.items[0].quantity.toLocaleString()}` : "—"}
+                            {order.items?.length > 1 && ` +${order.items.length - 1} more`}
+                          </td>
+                          <td className="px-6 py-4 text-sm font-semibold text-foreground">₹{Number(order.total_amount).toLocaleString()}</td>
+                          <td className="px-6 py-4 text-xs text-muted-foreground capitalize">{order.payment_method}</td>
+                          <td className="px-6 py-4">
+                            <span className={statusMap[order.order_status] || "badge-pending"}>
+                              {order.order_status.charAt(0).toUpperCase() + order.order_status.slice(1)}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex gap-2">
+                              <button className="text-xs text-primary hover:underline flex items-center gap-1">
+                                <Eye className="w-3 h-3" /> View
+                              </button>
+                              {order.order_status === "delivered" && (
+                                <button className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1">
+                                  <Download className="w-3 h-3" /> Invoice
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
           </motion.div>
         )}
 
@@ -160,27 +187,29 @@ export default function Dashboard() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="text-sm font-medium text-foreground mb-1.5 block">Full Name</label>
-                    <input type="text" value={profile.name} onChange={e => setProfile({...profile, name: e.target.value})}
+                    <input type="text" value={profile.name} onChange={e => setProfile({ ...profile, name: e.target.value })}
                       className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20" />
                   </div>
                   <div>
                     <label className="text-sm font-medium text-foreground mb-1.5 block">Phone</label>
-                    <input type="tel" value={profile.phone} onChange={e => setProfile({...profile, phone: e.target.value})}
+                    <input type="tel" value={profile.phone} onChange={e => setProfile({ ...profile, phone: e.target.value })}
                       className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20" />
                   </div>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-foreground mb-1.5 block">Email</label>
-                  <input type="email" value={profile.email} onChange={e => setProfile({...profile, email: e.target.value})}
+                  <input type="email" value={profile.email} onChange={e => setProfile({ ...profile, email: e.target.value })}
                     className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20" />
                 </div>
                 <div>
                   <label className="text-sm font-medium text-foreground mb-1.5 block">Address</label>
-                  <textarea value={profile.address} onChange={e => setProfile({...profile, address: e.target.value})} rows={3}
+                  <textarea value={profile.address} onChange={e => setProfile({ ...profile, address: e.target.value })} rows={3}
                     className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none" />
                 </div>
-                <button onClick={() => toast.success("Profile updated!")}
-                  className="gradient-cta text-primary-foreground px-8 py-3 rounded-xl font-semibold hover:shadow-elevated transition-all hover:scale-[1.02] btn-ripple">
+                <button
+                  onClick={handleProfileSave}
+                  className="gradient-cta text-primary-foreground px-8 py-3 rounded-xl font-semibold hover:shadow-elevated transition-all hover:scale-[1.02] btn-ripple"
+                >
                   Save Changes
                 </button>
               </div>

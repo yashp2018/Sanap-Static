@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { ShoppingCart, Menu, X, Phone, User, ChevronDown, Mail, Globe, LogOut, LayoutDashboard } from "lucide-react";
+import { ShoppingCart, Menu, X, Phone, User, ChevronDown, Mail, Globe, LogOut, LayoutDashboard, Sprout, ArrowRight } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import { categories } from "@/data/products";
@@ -43,8 +43,8 @@ export default function Header() {
       <div className="gradient-hero text-primary-foreground text-sm py-2.5 hidden md:block">
         <div className="container-nursery flex justify-between items-center">
           <div className="flex items-center gap-6">
-            <a href="mailto:sanaphitechnursery@gmail.com" className="flex items-center gap-1.5 hover:text-accent transition-colors">
-              <Mail className="w-3.5 h-3.5" /> sanaphitechnursery@gmail.com
+            <a href="mailto:info.sanapnursery@gmail.com" className="flex items-center gap-1.5 hover:text-accent transition-colors">
+              <Mail className="w-3.5 h-3.5" /> info.sanapnursery@gmail.com
             </a>
             <a href="tel:+917447770803" className="flex items-center gap-1.5 hover:text-accent transition-colors">
               <Phone className="w-3.5 h-3.5" /> +91 74477 70803
@@ -98,7 +98,7 @@ export default function Header() {
               </AnimatePresence>
             </div>
             <div className="h-4 w-px bg-primary-foreground/30" />
-            <span className="font-medium">🌱 28+ Years of Farming Excellence</span>
+            <span className="font-medium flex items-center gap-1.5"><Sprout className="w-3.5 h-3.5 text-accent" /> 28+ Years of Farming Excellence</span>
           </div>
         </div>
       </div>
@@ -167,7 +167,7 @@ export default function Header() {
                       to="/products"
                       className="flex items-center justify-center gap-2 px-4 py-3 bg-primary/5 text-primary font-semibold text-sm hover:bg-primary/10 transition-colors border-t border-border/20"
                     >
-                      View All Products →
+                      View All Products <ArrowRight className="w-3.5 h-3.5" />
                     </Link>
                   </motion.div>
                 )}

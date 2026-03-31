@@ -1,4 +1,4 @@
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 
 interface Props {
@@ -8,6 +8,7 @@ interface Props {
 
 export default function ProtectedRoute({ children, adminOnly = false }: Props) {
   const { user, loading } = useAuth();
+  const location = useLocation();
 
   if (loading) {
     return (
@@ -17,7 +18,12 @@ export default function ProtectedRoute({ children, adminOnly = false }: Props) {
     );
   }
 
-  if (!user) return <Navigate to="/login" replace />;
+  if (!user) {
+    // Save where they were trying to go
+    sessionStorage.setItem("returnTo", location.pathname + location.search);
+    return <Navigate to="/login" replace />;
+  }
+
   if (adminOnly && user.role !== "admin") return <Navigate to="/" replace />;
 
   return <>{children}</>;

@@ -1,193 +1,206 @@
-/**
- * API Service Layer — Placeholder functions for future PHP/PostgreSQL backend.
- * 
- * Replace BASE_URL with your actual PHP API endpoint when connecting backend.
- * All functions return typed data and handle errors gracefully.
- * 
- * Usage: import { fetchCategories, fetchVarieties } from "@/services/api";
- */
+const BASE = "/api";
 
-const BASE_URL = "/api"; // Change to your PHP backend URL, e.g. "https://yourdomain.com/api"
-
-// ─── Catalog APIs ───────────────────────────────────────────
-
-export async function fetchCategories() {
-  // Replace with: fetch(`${BASE_URL}/get_categories.php`)
-  const res = await fetch(`${BASE_URL}/get_categories.php`);
-  if (!res.ok) throw new Error("Failed to fetch categories");
-  return res.json();
-}
-
-export async function fetchCrops(categoryId: string) {
-  // Replace with: fetch(`${BASE_URL}/get_crops.php?category_id=${categoryId}`)
-  const res = await fetch(`${BASE_URL}/get_crops.php?category_id=${categoryId}`);
-  if (!res.ok) throw new Error("Failed to fetch crops");
-  return res.json();
-}
-
-export async function fetchVarieties(cropId: string) {
-  // Replace with: fetch(`${BASE_URL}/get_varieties.php?crop_id=${cropId}`)
-  const res = await fetch(`${BASE_URL}/get_varieties.php?crop_id=${cropId}`);
-  if (!res.ok) throw new Error("Failed to fetch varieties");
-  return res.json();
-}
-
-export async function fetchVarietyDetails(id: string) {
-  // Replace with: fetch(`${BASE_URL}/get_variety_details.php?id=${id}`)
-  const res = await fetch(`${BASE_URL}/get_variety_details.php?id=${id}`);
-  if (!res.ok) throw new Error("Failed to fetch variety details");
-  return res.json();
-}
-
-// ─── Cart APIs ──────────────────────────────────────────────
-
-export async function addToCart(varietyId: string, quantity: number, deliveryType: string) {
-  const res = await fetch(`${BASE_URL}/cart_add.php`, {
-    method: "POST",
+// ── Core fetch wrapper ────────────────────────────────────────
+async function api<T>(
+  path: string,
+  options: RequestInit = {}
+): Promise<T> {
+  const res = await fetch(`${BASE}${path}`, {
+    credentials: "include",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ variety_id: varietyId, quantity, delivery_type: deliveryType }),
+    ...options,
   });
-  if (!res.ok) throw new Error("Failed to add to cart");
-  return res.json();
+  const data = await res.json();
+  if (!data.success) throw new Error(data.message || "Request failed");
+  return data;
 }
 
-export async function removeFromCart(varietyId: string) {
-  const res = await fetch(`${BASE_URL}/cart_remove.php`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ variety_id: varietyId }),
-  });
-  if (!res.ok) throw new Error("Failed to remove from cart");
-  return res.json();
-}
-
-export async function updateCart(varietyId: string, quantity: number) {
-  const res = await fetch(`${BASE_URL}/cart_update.php`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ variety_id: varietyId, quantity }),
-  });
-  if (!res.ok) throw new Error("Failed to update cart");
-  return res.json();
-}
-
-export async function getCart() {
-  const res = await fetch(`${BASE_URL}/cart_get.php`);
-  if (!res.ok) throw new Error("Failed to get cart");
-  return res.json();
-}
-
-// ─── Auth APIs ──────────────────────────────────────────────
-
-export async function login(email: string, password: string) {
-  const res = await fetch(`${BASE_URL}/login.php`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password }),
-  });
-  if (!res.ok) throw new Error("Login failed");
-  return res.json();
-}
-
-export async function register(data: {
+// ── Types ─────────────────────────────────────────────────────
+export interface ApiVariety {
+  id: number;
+  slug: string;
   name: string;
-  phone: string;
-  email: string;
-  password: string;
-  address?: string;
-}) {
-  const res = await fetch(`${BASE_URL}/register.php`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data),
-  });
-  if (!res.ok) throw new Error("Registration failed");
-  return res.json();
+  company: string;
+  crop_slug: string;
+  crop_name: string;
+  category_slug: string;
+  category_name: string;
+  image_url: string | null;
+  duration_days: number;
+  stock: number;
+  min_order_qty: number;
+  price_ex_factory: number;
+  price_15k: number;
+  price_30k: number;
+  delivery_local_charge: number;
+  delivery_250km_charge: number;
+  features: string[];
+  advantages: string[];
+  agronomic_tips: string[];
+  available_months: number[];
+  char_segment?: string;
+  char_size?: string;
+  char_colour?: string;
+  char_shape?: string;
+  char_plant_type?: string;
+  char_avg_weight?: string;
+  char_maturity_days?: string;
+  char_sowing_season?: string;
+  char_harvesting_season?: string;
+  char_vigour?: string;
 }
 
-// ─── Order APIs ─────────────────────────────────────────────
+export interface ApiCategory {
+  id: number;
+  slug: string;
+  name: string;
+  icon: string;
+}
 
-export async function placeOrder(data: {
+export interface ApiCrop {
+  id: number;
+  slug: string;
+  name: string;
+  image_url: string | null;
+  category_slug: string;
+  category_name: string;
+  varieties: number;
+}
+
+export interface ApiCartItem {
+  id: number;
+  variety_id: number;
+  variety_slug: string;
+  variety_name: string;
+  company: string;
+  image_url: string | null;
+  crop_name: string;
+  quantity: number;
+  delivery_type: "local" | "250km";
+  price_ex_factory: number;
+  price_15k: number;
+  price_30k: number;
+  delivery_local_charge: number;
+  delivery_250km_charge: number;
+  stock: number;
+  min_order_qty: number;
+}
+
+export interface ApiOrder {
+  id: number;
+  order_number: string;
+  order_status: string;
+  payment_method: string;
+  payment_status: string;
+  total_amount: number;
+  total_plants: number;
+  delivery_city: string;
+  delivery_state: string;
+  created_at: string;
+  items: ApiOrderItem[];
+}
+
+export interface ApiOrderItem {
+  variety_name: string;
+  crop_name: string;
+  company: string;
+  quantity: number;
+  unit_price: number;
+  line_total: number;
+  delivery_type: string;
+}
+
+// ── Catalog ───────────────────────────────────────────────────
+export const fetchCategories = () =>
+  api<{ success: true; data: ApiCategory[] }>("/categories");
+
+export const fetchCrops = (category?: string) =>
+  api<{ success: true; data: ApiCrop[] }>(
+    `/crops${category ? `?category=${category}` : ""}`
+  );
+
+export const fetchVarieties = (params?: {
+  crop?: string;
+  category?: string;
+  search?: string;
+}) => {
+  const q = new URLSearchParams();
+  if (params?.crop)     q.set("crop",     params.crop);
+  if (params?.category) q.set("category", params.category);
+  if (params?.search)   q.set("search",   params.search);
+  const qs = q.toString();
+  return api<{ success: true; data: ApiVariety[] }>(
+    `/varieties${qs ? `?${qs}` : ""}`
+  );
+};
+
+export const fetchVariety = (slug: string) =>
+  api<{ success: true; data: ApiVariety }>(`/variety/${slug}`);
+
+// ── Cart ──────────────────────────────────────────────────────
+export const getCart = () =>
+  api<{ success: true; data: ApiCartItem[] }>("/cart");
+
+export const addToCart = (variety_id: number, quantity: number, delivery_type: "local" | "250km") =>
+  api<{ success: true; data: ApiCartItem[] }>("/cart/add", {
+    method: "POST",
+    body: JSON.stringify({ variety_id, quantity, delivery_type }),
+  });
+
+export const updateCart = (variety_id: number, updates: { quantity?: number; delivery_type?: "local" | "250km" }) =>
+  api<{ success: true; data: ApiCartItem[] }>("/cart/update", {
+    method: "PATCH",
+    body: JSON.stringify({ variety_id, ...updates }),
+  });
+
+export const removeFromCart = (variety_id: number) =>
+  api<{ success: true; data: ApiCartItem[] }>(`/cart/${variety_id}`, {
+    method: "DELETE",
+  });
+
+export const clearCart = () =>
+  api<{ success: true; data: [] }>("/cart", { method: "DELETE" });
+
+// ── Orders ────────────────────────────────────────────────────
+export const placeOrder = (data: {
   customer_name: string;
   customer_phone: string;
-  customer_address: string;
-  customer_city: string;
-  customer_pincode: string;
-  payment_method: string;
-}) {
-  const res = await fetch(`${BASE_URL}/place_order.php`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data),
-  });
-  if (!res.ok) throw new Error("Failed to place order");
-  return res.json();
+  customer_email?: string;
+  delivery_address: string;
+  delivery_city: string;
+  delivery_state: string;
+  delivery_pincode: string;
+  delivery_landmark?: string;
+  payment_method: "razorpay" | "cod" | "bank";
+  notes?: string;
+}) =>
+  api<{ success: true; data: { order_number: string; total_amount: number; total_plants: number; order_status: string } }>(
+    "/orders/place",
+    { method: "POST", body: JSON.stringify(data) }
+  );
+
+export const getOrders = () =>
+  api<{ success: true; data: ApiOrder[] }>("/orders");
+
+export const getOrder = (orderNumber: string) =>
+  api<{ success: true; data: ApiOrder }>(`/orders/${orderNumber}`);
+
+// ── Price helpers ────────────────────────────────────────────
+export function resolvePrice(v: ApiVariety | ApiCartItem, quantity: number): number {
+  const p30 = Number((v as ApiVariety).price_30k ?? (v as ApiCartItem).price_30k);
+  const p15 = Number((v as ApiVariety).price_15k ?? (v as ApiCartItem).price_15k);
+  const pEx = Number((v as ApiVariety).price_ex_factory ?? (v as ApiCartItem).price_ex_factory);
+  if (quantity >= 30000) return p30;
+  if (quantity >= 15000) return p15;
+  return pEx;
 }
 
-export async function getOrders() {
-  const res = await fetch(`${BASE_URL}/get_orders.php`);
-  if (!res.ok) throw new Error("Failed to fetch orders");
-  return res.json();
+export function resolveDelivery(v: ApiVariety | ApiCartItem, quantity: number, type: "local" | "250km"): number {
+  const local  = Number((v as ApiVariety).delivery_local_charge ?? (v as ApiCartItem).delivery_local_charge);
+  const far    = Number((v as ApiVariety).delivery_250km_charge ?? (v as ApiCartItem).delivery_250km_charge);
+  return (type === "local" ? local : far) * quantity;
 }
 
-// ─── Admin APIs ─────────────────────────────────────────────
-
-export async function adminGetDashboard() {
-  const res = await fetch(`${BASE_URL}/admin/dashboard.php`);
-  if (!res.ok) throw new Error("Failed to fetch admin dashboard");
-  return res.json();
-}
-
-export async function adminGetOrders() {
-  const res = await fetch(`${BASE_URL}/admin/orders.php`);
-  if (!res.ok) throw new Error("Failed to fetch admin orders");
-  return res.json();
-}
-
-export async function adminUpdateOrderStatus(orderId: string, status: string) {
-  const res = await fetch(`${BASE_URL}/admin/update_order.php`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ order_id: orderId, status }),
-  });
-  if (!res.ok) throw new Error("Failed to update order");
-  return res.json();
-}
-
-export async function adminGetVarieties() {
-  const res = await fetch(`${BASE_URL}/admin/varieties.php`);
-  if (!res.ok) throw new Error("Failed to fetch varieties");
-  return res.json();
-}
-
-export async function adminGetCategories() {
-  const res = await fetch(`${BASE_URL}/admin/categories.php`);
-  if (!res.ok) throw new Error("Failed to fetch categories");
-  return res.json();
-}
-
-export async function adminGetCustomers() {
-  const res = await fetch(`${BASE_URL}/admin/customers.php`);
-  if (!res.ok) throw new Error("Failed to fetch customers");
-  return res.json();
-}
-
-// ─── Price Calculator (Frontend-only, mirrors backend logic) ─
-
-export function calculatePriceLocal(
-  priceExFactory: number,
-  price15k: number,
-  price30k: number,
-  quantity: number
-): number {
-  if (quantity >= 30000) return price30k;
-  if (quantity >= 15000) return price15k;
-  return priceExFactory;
-}
-
-export function calculateDeliveryLocal(
-  chargePerPlant: number,
-  quantity: number
-): number {
-  return chargePerPlant * quantity;
+export function resolveTotal(v: ApiVariety | ApiCartItem, quantity: number, type: "local" | "250km"): number {
+  return resolvePrice(v, quantity) * quantity + resolveDelivery(v, quantity, type);
 }

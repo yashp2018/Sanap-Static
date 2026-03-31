@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { useState } from "react";
-import { X, ChevronLeft, ChevronRight, Camera } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, Camera, Tag } from "lucide-react";
 
 // Gallery Images
 import customerVisit from "@/assets/img/Customer-visit.jpeg";
@@ -134,8 +134,8 @@ export default function Gallery() {
                   <div className="absolute inset-0 bg-gradient-to-t from-foreground/80 via-foreground/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                   
                   <div className="absolute bottom-0 left-0 right-0 p-6 translate-y-4 group-hover:translate-y-0 transition-transform">
-                    <span className="inline-block bg-accent text-accent-foreground text-xs font-bold px-3 py-1 rounded-full mb-2">
-                      {img.category}
+                    <span className="inline-flex items-center gap-1.5 bg-accent text-accent-foreground text-xs font-bold px-3 py-1 rounded-full mb-2">
+                      <Tag className="w-3 h-3" /> {img.category}
                     </span>
                     <h3 className="font-display text-xl font-bold text-primary-foreground mb-1">
                       {img.title}
@@ -191,8 +191,8 @@ export default function Gallery() {
               className="w-full h-auto max-h-[85vh] object-contain rounded-lg"
             />
             <div className="text-center mt-6">
-              <span className="inline-block bg-accent text-accent-foreground text-xs font-bold px-3 py-1 rounded-full mb-2">
-                {filteredImages[currentImage].category}
+              <span className="inline-flex items-center gap-1.5 bg-accent text-accent-foreground text-xs font-bold px-3 py-1 rounded-full mb-2">
+                <Tag className="w-3 h-3" /> {filteredImages[currentImage].category}
               </span>
               <h3 className="font-display text-2xl font-bold text-white mb-2">
                 {filteredImages[currentImage].title}

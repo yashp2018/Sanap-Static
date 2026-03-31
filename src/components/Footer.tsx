@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
-import { Phone, Mail, MapPin, Leaf, Facebook, Instagram, Youtube, ArrowRight } from "lucide-react";
+import { Phone, Mail, MapPin, Facebook, Instagram, Youtube, ArrowRight, Sprout } from "lucide-react";
+import logo from "../assets/S-LOGO.png";
 import { useLocation } from "react-router-dom";
 
 export default function Footer() {
@@ -35,9 +36,7 @@ export default function Footer() {
           {/* Brand */}
           <div>
             <div className="flex items-center gap-3 mb-5">
-              <div className="w-12 h-12 rounded-xl bg-primary-foreground/10 flex items-center justify-center">
-                <Leaf className="w-6 h-6" />
-              </div>
+              <img src={logo} alt="Sanap Hi-Tech Logo" className="w-14 h-14 rounded-xl object-contain bg-primary-foreground/10 p-1" />
               <div>
                 <h3 className="font-display text-xl font-bold">Sanap Hi-Tech</h3>
                 <p className="text-xs text-primary-foreground/60 uppercase tracking-widest">Premium Nursery</p>
@@ -82,8 +81,8 @@ export default function Footer() {
             <ul className="space-y-3 text-sm">
               {["Tomato", "Chili", "Brinjal", "Capsicum", "Watermelon", "Cucumber"].map((crop) => (
                 <li key={crop}>
-                  <Link to="/products" className="text-primary-foreground/70 hover:text-primary-foreground hover:translate-x-1 inline-block transition-all">
-                    🌱 {crop} Seedlings
+                  <Link to="/products" className="text-primary-foreground/70 hover:text-primary-foreground hover:translate-x-1 inline-flex items-center gap-2 transition-all">
+                    <Sprout className="w-3.5 h-3.5 text-accent" /> {crop} Seedlings
                   </Link>
                 </li>
               ))}
@@ -111,7 +110,9 @@ export default function Footer() {
                 </div>
                 <div>
                   <p className="text-xs text-primary-foreground/50 mb-0.5">Email</p>
-                  <span className="text-primary-foreground/80">sanaphitechnursery@gmail.com</span>
+                  <a href="mailto:info.sanapnursery@gmail.com" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors block">
+                    info.sanapnursery@gmail.com
+                  </a>
                 </div>
               </li>
               <li className="flex items-start gap-3">
@@ -120,7 +121,7 @@ export default function Footer() {
                 </div>
                 <div>
                   <p className="text-xs text-primary-foreground/50 mb-0.5">Address</p>
-                  <span className="text-primary-foreground/80">Tal. Dindori, Dist. Nashik - 422 004, Mah. INDIA, Dindori road</span>
+                  <span className="text-primary-foreground/80">Near MUHS, Tal. Dindori, Dist. Nashik - 422 004, Maharashtra, India</span>
                 </div>
               </li>
             </ul>

@@ -1,33 +1,52 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Leaf, Eye, EyeOff, Mail, Lock, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
+import { validateLogin } from "@/lib/validation";
 
 export default function Login() {
   const navigate = useNavigate();
   const { login, user } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [form, setForm] = useState({ email: "", password: "" });
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
 
-  // Already logged in — redirect
-  if (user) {
-    navigate(user.role === "admin" ? "/admin" : "/dashboard", { replace: true });
-  }
+  useEffect(() => {
+    if (user) {
+      // Check if we need to return somewhere after login
+      const returnTo = sessionStorage.getItem("returnTo");
+      if (returnTo) {
+        sessionStorage.removeItem("returnTo");
+        navigate(returnTo, { replace: true });
+      } else {
+        navigate(user.role === "admin" ? "/admin" : "/dashboard", { replace: true });
+      }
+    }
+  }, [user, navigate]);
+
+  const field = (key: string) => ({
+    onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
+      setForm(f => ({ ...f, [key]: e.target.value }));
+      if (errors[key]) setErrors(er => ({ ...er, [key]: "" }));
+    },
+    className: `w-full py-3 rounded-xl border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 transition-colors ${
+      errors[key]
+        ? "border-red-500 focus:ring-red-200 pl-11 pr-4"
+        : "border-border focus:ring-primary/20 pl-11 pr-4"
+    }`,
+  });
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.email || !form.password) {
-      toast.error("Please fill in all fields");
-      return;
-    }
+    const errs = validateLogin(form.email, form.password);
+    if (Object.keys(errs).length) { setErrors(errs); return; }
     setLoading(true);
     try {
       await login(form.email, form.password);
       toast.success("Login successful!");
-      navigate("/dashboard");
     } catch (err: any) {
       toast.error(err.message || "Login failed");
     } finally {
@@ -36,16 +55,11 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center py-12 px-4 surface-green" id="login-page">
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md"
-      >
-        {/* Logo */}
+    <div className="min-h-screen flex items-center justify-center py-12 px-4 surface-green">
+      <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md">
         <div className="text-center mb-8">
-          <Link to="/" className="inline-flex items-center gap-3">
-            <div className="w-14 h-14 rounded-2xl gradient-cta flex items-center justify-center shadow-glow">
+          <Link to="/">
+            <div className="w-14 h-14 rounded-2xl gradient-cta flex items-center justify-center shadow-glow mx-auto">
               <Leaf className="w-7 h-7 text-primary-foreground" />
             </div>
           </Link>
@@ -53,8 +67,10 @@ export default function Login() {
           <p className="text-muted-foreground mt-1">Login to your Sanap Nursery account</p>
         </div>
 
-        <div className="bg-card rounded-2xl border border-border/50 shadow-elevated p-8" id="login-form-card">
-          <form onSubmit={handleLogin} className="space-y-5" id="login-form">
+        <div className="bg-card rounded-2xl border border-border/50 shadow-elevated p-8">
+          <form onSubmit={handleLogin} className="space-y-5" noValidate>
+
+            {/* Email / Phone */}
             <div>
               <label className="text-sm font-medium text-foreground mb-1.5 block">Email or Phone</label>
               <div className="relative">
@@ -62,15 +78,15 @@ export default function Login() {
                 <input
                   type="text"
                   value={form.email}
-                  onChange={e => setForm({...form, email: e.target.value})}
-                  placeholder="Enter email or phone"
-                  className="w-full pl-11 pr-4 py-3 rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
-                  id="loginEmail"
+                  placeholder="Enter email or 10-digit phone"
                   maxLength={255}
+                  {...field("email")}
                 />
               </div>
+              {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
             </div>
 
+            {/* Password */}
             <div>
               <div className="flex items-center justify-between mb-1.5">
                 <label className="text-sm font-medium text-foreground">Password</label>
@@ -81,23 +97,22 @@ export default function Login() {
                 <input
                   type={showPassword ? "text" : "password"}
                   value={form.password}
-                  onChange={e => setForm({...form, password: e.target.value})}
                   placeholder="Enter password"
-                  className="w-full pl-11 pr-12 py-3 rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
-                  id="loginPassword"
                   maxLength={128}
+                  {...field("password")}
+                  className={field("password").className + " pr-12"}
                 />
-                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                <button type="button" onClick={() => setShowPassword(s => !s)} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
+              {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
             </div>
 
             <button
               type="submit"
               disabled={loading}
               className="w-full gradient-cta text-primary-foreground py-3.5 rounded-xl font-bold text-lg hover:shadow-elevated transition-all hover:scale-[1.02] btn-ripple disabled:opacity-60 flex items-center justify-center gap-2"
-              id="loginBtn"
             >
               {loading ? "Logging in..." : <>Login <ArrowRight className="w-5 h-5" /></>}
             </button>

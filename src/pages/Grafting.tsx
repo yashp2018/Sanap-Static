@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Sprout, Shield, TrendingUp, Droplet, CheckCircle, ArrowRight } from "lucide-react";
+import { Sprout, Shield, TrendingUp, Droplet, CheckCircle, ArrowRight, Leaf, Dna } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const benefits = [
@@ -64,11 +64,17 @@ export default function Grafting() {
               </p>
               <div className="grid md:grid-cols-2 gap-6 my-8">
                 <div className="bg-card p-6 rounded-2xl border border-border">
-                  <h3 className="font-display text-xl font-bold text-primary mb-3">🌿 Scion</h3>
+                  <div className="w-10 h-10 rounded-xl gradient-cta flex items-center justify-center mb-3">
+                    <Leaf className="w-5 h-5 text-primary-foreground" />
+                  </div>
+                  <h3 className="font-display text-xl font-bold text-primary mb-3">Scion</h3>
                   <p className="text-sm">The upper portion of the plant which produces fruits and determines the variety characteristics.</p>
                 </div>
                 <div className="bg-card p-6 rounded-2xl border border-border">
-                  <h3 className="font-display text-xl font-bold text-primary mb-3">🌱 Rootstock</h3>
+                  <div className="w-10 h-10 rounded-xl gradient-cta flex items-center justify-center mb-3">
+                    <Sprout className="w-5 h-5 text-primary-foreground" />
+                  </div>
+                  <h3 className="font-display text-xl font-bold text-primary mb-3">Rootstock</h3>
                   <p className="text-sm">The lower portion with roots that absorbs water and nutrients, providing strength and disease resistance.</p>
                 </div>
               </div>

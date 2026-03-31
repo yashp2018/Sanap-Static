@@ -3,8 +3,14 @@ import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, MapPin, CreditCard, Truck, Banknote, Building, Check } from "lucide-react";
 import { motion } from "framer-motion";
 import { useCart } from "@/context/CartContext";
-import { calculateTotal, calculatePrice, calculateDeliveryCharge } from "@/data/products";
+import { ApiCartItem, resolvePrice, resolveDelivery, placeOrder } from "@/services/api";
 import { toast } from "sonner";
+import { validateCheckout } from "@/lib/validation";
+
+function itemTotal(item: ApiCartItem): number {
+  return resolvePrice(item as any, item.quantity) * item.quantity
+    + resolveDelivery(item as any, item.quantity, item.delivery_type);
+}
 
 export default function Checkout() {
   const { items, clearCart } = useCart();
@@ -13,19 +19,43 @@ export default function Checkout() {
   const [form, setForm] = useState({
     fullName: "", phone: "", email: "", address: "", city: "", state: "Maharashtra", pincode: "", landmark: ""
   });
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const grandTotal = items.reduce((sum, item) => sum + calculateTotal(item), 0);
+  const set = (key: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    setForm(f => ({ ...f, [key]: e.target.value }));
+    if (errors[key]) setErrors(er => ({ ...er, [key]: "" }));
+  };
+
+  const inputCls = (key: string, extra = "") =>
+    `w-full px-4 py-3 rounded-xl border bg-background text-foreground focus:outline-none focus:ring-2 transition-colors ${extra} ${
+      errors[key] ? "border-red-500 focus:ring-red-200" : "border-border focus:ring-primary/20"
+    }`;
+
+  const grandTotal = items.reduce((sum, item) => sum + itemTotal(item), 0);
   const totalPlants = items.reduce((sum, item) => sum + item.quantity, 0);
 
-  const handlePlaceOrder = (e: React.FormEvent) => {
+  const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.fullName || !form.phone || !form.address || !form.city || !form.pincode) {
-      toast.error("Please fill all required delivery fields");
-      return;
+    const errs = validateCheckout(form);
+    if (Object.keys(errs).length) { setErrors(errs); toast.error("Please fix the errors below"); return; }
+    try {
+      const res = await placeOrder({
+        customer_name: form.fullName,
+        customer_phone: form.phone,
+        customer_email: form.email || undefined,
+        delivery_address: form.address,
+        delivery_city: form.city,
+        delivery_state: form.state,
+        delivery_pincode: form.pincode,
+        delivery_landmark: form.landmark || undefined,
+        payment_method: paymentMethod,
+      });
+      toast.success(`Order placed! Order #${res.data.order_number}`);
+      clearCart();
+      navigate("/dashboard");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to place order");
     }
-    toast.success("Order placed successfully! Order #SNH-" + Math.floor(1000 + Math.random() * 9000));
-    clearCart();
-    navigate("/dashboard");
   };
 
   if (items.length === 0) {
@@ -64,33 +94,38 @@ export default function Checkout() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4" id="delivery-address-fields">
                   <div>
                     <label className="text-sm font-medium text-foreground mb-1.5 block">Full Name *</label>
-                    <input type="text" value={form.fullName} onChange={e => setForm({...form, fullName: e.target.value})}
-                      className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20" maxLength={100} required id="customerName" />
+                    <input type="text" value={form.fullName} onChange={set("fullName")}
+                      className={inputCls("fullName")} maxLength={100} id="customerName" />
+                    {errors.fullName && <p className="text-red-500 text-xs mt-1">{errors.fullName}</p>}
                   </div>
                   <div>
                     <label className="text-sm font-medium text-foreground mb-1.5 block">Phone Number *</label>
-                    <input type="tel" value={form.phone} onChange={e => setForm({...form, phone: e.target.value})}
-                      className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20" maxLength={15} required id="customerPhone" />
+                    <input type="tel" value={form.phone} onChange={set("phone")}
+                      className={inputCls("phone")} maxLength={15} id="customerPhone" />
+                    {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
                   </div>
                   <div className="md:col-span-2">
                     <label className="text-sm font-medium text-foreground mb-1.5 block">Email (Optional)</label>
-                    <input type="email" value={form.email} onChange={e => setForm({...form, email: e.target.value})}
-                      className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20" maxLength={255} id="checkout-email" />
+                    <input type="email" value={form.email} onChange={set("email")}
+                      className={inputCls("email")} maxLength={255} id="checkout-email" />
+                    {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
                   </div>
                   <div className="md:col-span-2">
                     <label className="text-sm font-medium text-foreground mb-1.5 block">Full Address *</label>
-                    <textarea value={form.address} onChange={e => setForm({...form, address: e.target.value})} rows={3}
-                      className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none" maxLength={500} required id="customerAddress" />
+                    <textarea value={form.address} onChange={set("address")} rows={3}
+                      className={inputCls("address", "resize-none")} maxLength={500} id="customerAddress" />
+                    {errors.address && <p className="text-red-500 text-xs mt-1">{errors.address}</p>}
                   </div>
                   <div>
                     <label className="text-sm font-medium text-foreground mb-1.5 block">City *</label>
-                    <input type="text" value={form.city} onChange={e => setForm({...form, city: e.target.value})}
-                      className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20" required id="customerCity" />
+                    <input type="text" value={form.city} onChange={set("city")}
+                      className={inputCls("city")} id="customerCity" />
+                    {errors.city && <p className="text-red-500 text-xs mt-1">{errors.city}</p>}
                   </div>
                   <div>
                     <label className="text-sm font-medium text-foreground mb-1.5 block">State *</label>
-                    <select value={form.state} onChange={e => setForm({...form, state: e.target.value})}
-                      className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20" id="checkout-state">
+                    <select value={form.state} onChange={set("state")}
+                      className={inputCls("state")} id="checkout-state">
                       {["Maharashtra", "Karnataka", "Andhra Pradesh", "Telangana", "Tamil Nadu", "Gujarat", "Rajasthan", "Madhya Pradesh", "Uttar Pradesh", "Other"].map(s => (
                         <option key={s} value={s}>{s}</option>
                       ))}
@@ -98,13 +133,14 @@ export default function Checkout() {
                   </div>
                   <div>
                     <label className="text-sm font-medium text-foreground mb-1.5 block">Pincode *</label>
-                    <input type="text" value={form.pincode} onChange={e => setForm({...form, pincode: e.target.value})}
-                      className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20" maxLength={6} required id="customerPincode" />
+                    <input type="text" value={form.pincode} onChange={set("pincode")}
+                      className={inputCls("pincode")} maxLength={6} id="customerPincode" />
+                    {errors.pincode && <p className="text-red-500 text-xs mt-1">{errors.pincode}</p>}
                   </div>
                   <div>
                     <label className="text-sm font-medium text-foreground mb-1.5 block">Landmark</label>
-                    <input type="text" value={form.landmark} onChange={e => setForm({...form, landmark: e.target.value})}
-                      className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20" maxLength={100} />
+                    <input type="text" value={form.landmark} onChange={set("landmark")}
+                      className={inputCls("landmark")} maxLength={100} />
                   </div>
                 </div>
               </div>
@@ -151,12 +187,12 @@ export default function Checkout() {
 
                 <div className="space-y-4 mb-6 max-h-60 overflow-y-auto">
                   {items.map((item) => (
-                    <div key={item.variety.id} className="flex gap-3" id={`order-item-${item.variety.id}`}>
-                      <img src={item.variety.image} alt={item.variety.name} className="w-14 h-14 rounded-lg object-cover" />
+                    <div key={item.variety_id} className="flex gap-3" id={`order-item-${item.variety_id}`}>
+                      <img src={item.image_url || "/SA.png"} alt={item.variety_name} className="w-14 h-14 rounded-lg object-cover" />
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-foreground truncate">{item.variety.name}</p>
+                        <p className="text-sm font-semibold text-foreground truncate">{item.variety_name}</p>
                         <p className="text-xs text-muted-foreground">{item.quantity.toLocaleString()} plants</p>
-                        <p className="text-sm font-bold text-primary mt-0.5">₹{calculateTotal(item).toLocaleString()}</p>
+                        <p className="text-sm font-bold text-primary mt-0.5">₹{itemTotal(item).toLocaleString()}</p>
                       </div>
                     </div>
                   ))}
