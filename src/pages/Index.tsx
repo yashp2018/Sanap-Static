@@ -7,6 +7,7 @@ import ProductCard from "@/components/ProductCard";
 import { useCountUp } from "@/hooks/useCountUp";
 import { useState, useRef, useEffect } from "react";
 import FarmerTestimonialVideos from "@/components/FarmerTestimonialVideos";
+import { useLanguage } from "@/context/LanguageContext";
 
 // Gallery Images
 import customerVisit from "@/assets/img/Customer-visit.jpeg";
@@ -24,19 +25,19 @@ import img11 from "@/assets/img/IMG-20251221-WA0046.jpg.jpeg";
 import processImage from "@/assets/img/Process.png";
 
 const stats = [
-  { icon: Award, value: 28, suffix: "+", label: "Years Experience" },
-  { icon: Sprout, value: 10, suffix: "L+", label: "Plants Supplied" },
-  { icon: Users, value: 5000, suffix: "+", label: "Happy Farmers" },
-  { icon: Truck, value: 15, suffix: "+", label: "States Covered" },
+  { icon: Award, value: 28, suffix: "+", labelKey: "yearsExp" },
+  { icon: Sprout, value: 10, suffix: "L+", labelKey: "plantsSupplied" },
+  { icon: Users, value: 5000, suffix: "+", labelKey: "happyFarmers" },
+  { icon: Truck, value: 15, suffix: "+", labelKey: "statesCovered" },
 ];
 
 const whyChooseUs = [
-  { icon: Shield, title: "Disease Resistant", desc: "Our grafted plants offer superior resistance to soil-borne diseases, reducing crop losses significantly." },
-  { icon: Microscope, title: "Advanced Grafting", desc: "World-class Japanese grafting technology ensuring 98%+ survival rate in your fields." },
-  { icon: Clock, title: "Timely Delivery", desc: "Precise scheduling of plant readiness and delivery to match your planting season perfectly." },
-  { icon: Star, title: "Premium Quality", desc: "Every seedling undergoes strict quality control before dispatch. No compromise on plant health." },
-  { icon: Truck, title: "Pan-India Shipping", desc: "Temperature-controlled logistics network covering 15+ states with 24-48 hour delivery." },
-  { icon: Users, title: "Expert Support", desc: "Dedicated agronomists provide variety selection guidance and post-planting crop advisory." },
+  { icon: Shield, titleKey: "diseaseResistant", descKey: "diseaseResistantDesc" },
+  { icon: Microscope, titleKey: "advancedGrafting", descKey: "advancedGraftingDesc" },
+  { icon: Clock, titleKey: "timelyDelivery", descKey: "timelyDeliveryDesc" },
+  { icon: Star, titleKey: "premiumQuality", descKey: "premiumQualityDesc" },
+  { icon: Truck, titleKey: "panIndiaShipping", descKey: "panIndiaShippingDesc" },
+  { icon: Users, titleKey: "expertSupport", descKey: "expertSupportDesc" },
 ];
 
 const testimonials = [
@@ -61,7 +62,7 @@ const galleryImages = [
   { src: img11, category: "Nursery", title: "Healthy Seedlings" },
 ];
 
-function StatCard({ stat }: { stat: typeof stats[0] }) {
+function StatCard({ stat, label }: { stat: typeof stats[0]; label: string }) {
   const { count, ref } = useCountUp(stat.value);
   return (
     <div ref={ref} className="bg-card rounded-2xl p-6 md:p-8 shadow-elevated text-center hover-lift">
@@ -69,7 +70,7 @@ function StatCard({ stat }: { stat: typeof stats[0] }) {
       <p className="text-3xl md:text-4xl font-display font-bold text-foreground">
         {count.toLocaleString()}{stat.suffix}
       </p>
-      <p className="text-sm text-muted-foreground font-sans mt-1">{stat.label}</p>
+      <p className="text-sm text-muted-foreground font-sans mt-1">{label}</p>
     </div>
   );
 }
@@ -78,6 +79,7 @@ export default function Index() {
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
   const [cropSliderPos, setCropSliderPos] = useState(0);
   const allCrops = categories.flatMap(c => c.crops);
+  const { t } = useLanguage();
 
   return (
     <div className="min-h-screen">
@@ -107,7 +109,7 @@ export default function Index() {
               transition={{ delay: 0.3 }}
               className="inline-flex items-center gap-2 bg-black/40 text-white border border-white/30 rounded-full px-5 py-2 text-sm font-semibold mb-8 backdrop-blur-sm drop-shadow-lg"
             >
-              <Sprout className="w-4 h-4 text-green-400" /> Trusted by 5000+ Farmers Across India
+              <Sprout className="w-4 h-4 text-green-400" /> {t("trustedFarmers")}
             </motion.span>
 
             {/* Heading */}
@@ -118,7 +120,7 @@ export default function Index() {
                 transition={{ delay: 0.4 }}
                 className="block text-white"
               >
-                28+ Years of
+                {t("yearsExperience")}
               </motion.span>
               <motion.span
                 initial={{ opacity: 0, y: 20 }}
@@ -126,7 +128,7 @@ export default function Index() {
                 transition={{ delay: 0.6 }}
                 className="block text-green-400"
               >
-                Farming Excellence
+                {t("farmingExcellence")}
               </motion.span>
             </h1>
 
@@ -138,9 +140,7 @@ export default function Index() {
               className="text-lg md:text-xl text-white mb-10 max-w-xl font-sans leading-relaxed"
               style={{ textShadow: "0 1px 8px rgba(0,0,0,0.9)" }}
             >
-              Ultra-strong grafted seedlings with world-class technology.
-              Premium varieties of Tomato, Chili, Brinjal, Capsicum & more.
-              Bulk orders from 15,000+ plants.
+              {t("heroDescription")}
             </motion.p>
 
             {/* Buttons */}
@@ -154,13 +154,13 @@ export default function Index() {
                 to="/products"
                 className="bg-green-500 hover:bg-green-400 text-white px-8 py-4 rounded-full font-bold text-lg shadow-lg hover:shadow-xl transition-all hover:scale-105 flex items-center gap-2 btn-ripple"
               >
-                Explore Products <ArrowRight className="w-5 h-5" />
+                {t("exploreProducts")} <ArrowRight className="w-5 h-5" />
               </Link>
               <Link
                 to="/contact"
                 className="bg-black/40 backdrop-blur-md border-2 border-white/50 text-white px-8 py-4 rounded-full font-semibold text-lg hover:bg-black/60 transition-all"
               >
-                Contact Us
+                {t("contactUs")}
               </Link>
             </motion.div>
 
@@ -172,16 +172,16 @@ export default function Index() {
               className="flex flex-wrap gap-3 mt-12"
             >
               {[
-                { Icon: Trophy, text: "ISO Certified" },
-                { Icon: Dna, text: "Japanese Grafting Tech" },
-                { Icon: Truck, text: "Pan-India Delivery" },
-                { Icon: BadgeDollarSign, text: "B2B Pricing" },
-              ].map(({ Icon, text }) => (
+                { Icon: Trophy, key: "isoCertified" },
+                { Icon: Dna, key: "japaneseGrafting" },
+                { Icon: Truck, key: "panIndiaDelivery" },
+                { Icon: BadgeDollarSign, key: "b2bPricing" },
+              ].map(({ Icon, key }) => (
                 <span
-                  key={text}
+                  key={key}
                   className="inline-flex items-center gap-1.5 bg-black/40 backdrop-blur-sm border border-white/20 text-white text-xs font-semibold px-4 py-2 rounded-full"
                 >
-                  <Icon className="w-3.5 h-3.5" /> {text}
+                  <Icon className="w-3.5 h-3.5" /> {t(key)}
                 </span>
               ))}
             </motion.div>
@@ -195,7 +195,7 @@ export default function Index() {
           transition={{ delay: 1.5 }}
           className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
         >
-          <span className="text-white text-xs font-sans uppercase tracking-widest drop-shadow-lg">Scroll</span>
+          <span className="text-white text-xs font-sans uppercase tracking-widest drop-shadow-lg">{t("scroll")}</span>
           <div className="w-6 h-10 border-2 border-white/60 rounded-full flex justify-center pt-2">
             <motion.div
               animate={{ y: [0, 12, 0] }}
@@ -212,13 +212,13 @@ export default function Index() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
             {stats.map((stat, i) => (
               <motion.div
-                key={stat.label}
+                key={stat.labelKey}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.1 }}
                 viewport={{ once: true }}
               >
-                <StatCard stat={stat} />
+                <StatCard stat={stat} label={t(stat.labelKey)} />
               </motion.div>
             ))}
           </div>
@@ -234,11 +234,11 @@ export default function Index() {
             viewport={{ once: true }}
             className="text-center mb-14"
           >
-            <span className="text-sm font-semibold text-primary uppercase tracking-[0.2em] font-sans">Our Categories</span>
+            <span className="text-sm font-semibold text-primary uppercase tracking-[0.2em] font-sans">{t("ourCategories")}</span>
             <h2 className="font-display text-3xl md:text-5xl font-bold text-foreground mt-3 mb-4">
-              What We Grow
+              {t("whatWeGrow")}
             </h2>
-            <p className="text-muted-foreground max-w-xl mx-auto">Premium grafted seedlings across multiple crop categories, carefully cultivated for Indian farming conditions.</p>
+            <p className="text-muted-foreground max-w-xl mx-auto">{t("categoriesDesc")}</p>
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -261,7 +261,7 @@ export default function Index() {
                     {cat.name}
                   </h3>
                   <p className="text-sm text-muted-foreground mb-4">
-                    {cat.crops.length} crops · {cat.crops.reduce((s, c) => s + c.varieties, 0)} varieties available
+                    {cat.crops.length} {t("crops")} · {cat.crops.reduce((s, c) => s + c.varieties, 0)} {t("varietiesAvailable")}
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {cat.crops.slice(0, 4).map((crop) => (
@@ -271,7 +271,7 @@ export default function Index() {
                     ))}
                   </div>
                   <div className="mt-5 text-sm font-semibold text-primary flex items-center gap-1 group-hover:gap-2 transition-all">
-                    Browse Category <ArrowRight className="w-4 h-4" />
+                    {t("browseCategory")} <ArrowRight className="w-4 h-4" />
                   </div>
                 </Link>
               </motion.div>
@@ -348,11 +348,11 @@ export default function Index() {
             viewport={{ once: true }}
             className="text-center mb-14"
           >
-            <span className="text-sm font-semibold text-primary uppercase tracking-[0.2em] font-sans">Best Sellers</span>
+            <span className="text-sm font-semibold text-primary uppercase tracking-[0.2em] font-sans">{t("bestSellers")}</span>
             <h2 className="font-display text-3xl md:text-5xl font-bold text-foreground mt-3 mb-4">
-              Featured Varieties
+              {t("featuredVarieties")}
             </h2>
-            <p className="text-muted-foreground max-w-xl mx-auto">Hand-picked premium varieties with proven performance in Indian farming conditions.</p>
+            <p className="text-muted-foreground max-w-xl mx-auto">{t("featuredDesc")}</p>
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -379,7 +379,7 @@ export default function Index() {
               to="/products"
               className="inline-flex items-center gap-2 gradient-cta text-primary-foreground px-8 py-4 rounded-full font-semibold text-lg hover:shadow-elevated transition-all hover:scale-105 btn-ripple"
             >
-              View All Products <ArrowRight className="w-5 h-5" />
+              {t("viewAllProducts")} <ArrowRight className="w-5 h-5" />
             </Link>
           </motion.div>
         </div>
@@ -394,16 +394,16 @@ export default function Index() {
             viewport={{ once: true }}
             className="text-center mb-14"
           >
-            <span className="text-sm font-semibold text-primary uppercase tracking-[0.2em] font-sans">Our Advantages</span>
+            <span className="text-sm font-semibold text-primary uppercase tracking-[0.2em] font-sans">{t("ourAdvantages")}</span>
             <h2 className="font-display text-3xl md:text-5xl font-bold text-foreground mt-3 mb-4">
-              Why Choose Us
+              {t("whyChooseUs")}
             </h2>
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {whyChooseUs.map((item, i) => (
               <motion.div
-                key={item.title}
+                key={item.titleKey}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.1 }}
@@ -413,8 +413,8 @@ export default function Index() {
                 <div className="w-14 h-14 rounded-2xl gradient-cta flex items-center justify-center mb-5 group-hover:shadow-glow transition-all">
                   <item.icon className="w-7 h-7 text-primary-foreground" />
                 </div>
-                <h3 className="font-display text-xl font-bold text-foreground mb-3">{item.title}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
+                <h3 className="font-display text-xl font-bold text-foreground mb-3">{t(item.titleKey)}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">{t(item.descKey)}</p>
               </motion.div>
             ))}
           </div>
@@ -582,12 +582,12 @@ export default function Index() {
             viewport={{ once: true }}
             className="text-center max-w-3xl mx-auto mb-14"
           >
-            <span className="text-sm font-semibold text-accent uppercase tracking-[0.2em] font-sans">Transparent Pricing</span>
+            <span className="text-sm font-semibold text-accent uppercase tracking-[0.2em] font-sans">{t("transparentPricing")}</span>
             <h2 className="font-display text-3xl md:text-5xl font-bold mt-3 mb-4">
-              Bulk Order Pricing
+              {t("bulkOrderPricing")}
             </h2>
             <p className="text-lg text-primary-foreground/70">
-              Our B2B pricing structure ensures the best rates for your farm. Bigger orders = better prices.
+              {t("pricingDesc")}
             </p>
           </motion.div>
 
@@ -799,17 +799,17 @@ export default function Index() {
 
             <div className="relative z-10">
               <h2 className="font-display text-3xl md:text-5xl font-bold mb-4">
-                Ready to Place Your Order?
+                {t("readyToOrder")}
               </h2>
               <p className="text-lg text-primary-foreground/80 mb-8 max-w-xl mx-auto">
-                Contact us for custom quotes, delivery scheduling, and variety recommendations for your region.
+                {t("ctaDesc")}
               </p>
               <div className="flex flex-wrap justify-center gap-4">
                 <Link
                   to="/products"
                   className="gradient-gold text-white px-8 py-4 rounded-full font-bold text-lg hover:shadow-gold transition-all hover:scale-105 btn-ripple"
                 >
-                  Browse Catalog
+                  {t("browseCatalog")}
                 </Link>
                 <a
                   href="https://wa.me/919823044556"
@@ -817,13 +817,13 @@ export default function Index() {
                   rel="noopener noreferrer"
                   className="bg-primary-foreground/10 backdrop-blur-sm border-2 border-primary-foreground/30 text-primary-foreground px-8 py-4 rounded-full font-semibold text-lg hover:bg-primary-foreground/20 transition-all"
                 >
-                  WhatsApp Us
+                  {t("whatsappUs")}
                 </a>
                 <a
                   href="tel:+919823044556"
                   className="bg-primary-foreground/10 backdrop-blur-sm border-2 border-primary-foreground/30 text-primary-foreground px-8 py-4 rounded-full font-semibold text-lg hover:bg-primary-foreground/20 transition-all"
                 >
-                  Call Now
+                  {t("callNow")}
                 </a>
               </div>
             </div>

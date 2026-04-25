@@ -13,7 +13,7 @@ function itemTotal(item: ApiCartItem): number {
 }
 
 export default function Cart() {
-  const { items, removeItem, updateQuantity, updateDelivery, clearCart } = useCart();
+  const { items, removeItem, updateQuantity, updateDelivery, clearItems } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -162,7 +162,7 @@ export default function Cart() {
               )}
 
               <button
-                onClick={() => { clearCart(); toast.info("Cart cleared"); }}
+                onClick={() => { clearItems(); toast.info("Cart cleared"); }}
                 className="w-full text-sm text-muted-foreground hover:text-destructive mt-3 transition-colors"
               >
                 Clear Cart

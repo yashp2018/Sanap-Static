@@ -2,9 +2,11 @@ import { Link } from "react-router-dom";
 import { Phone, Mail, MapPin, Facebook, Instagram, Youtube, ArrowRight, Sprout } from "lucide-react";
 import logo from "../assets/S-LOGO.png";
 import { useLocation } from "react-router-dom";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function Footer() {
   const location = useLocation();
+  const { t } = useLanguage();
   if (location.pathname.startsWith("/admin")) return null;
 
   return (
@@ -14,8 +16,8 @@ export default function Footer() {
         <div className="container-nursery py-12">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div>
-              <h3 className="font-display text-2xl font-bold mb-1">Stay Updated</h3>
-              <p className="text-primary-foreground/70 text-sm">Get seasonal plant availability & pricing updates</p>
+              <h3 className="font-display text-2xl font-bold mb-1">{t("stayUpdated")}</h3>
+              <p className="text-primary-foreground/70 text-sm">{t("newsletterDesc")}</p>
             </div>
             <div className="flex gap-2 w-full md:w-auto">
               <input
@@ -24,7 +26,7 @@ export default function Footer() {
                 className="px-5 py-3 rounded-full bg-primary-foreground/10 border border-primary-foreground/20 text-primary-foreground placeholder:text-primary-foreground/40 focus:outline-none focus:border-accent w-full md:w-72 text-sm"
               />
               <button className="gradient-gold text-accent-foreground px-6 py-3 rounded-full font-semibold text-sm hover:shadow-gold transition-all hover:scale-105 btn-ripple whitespace-nowrap flex items-center gap-2">
-                Subscribe <ArrowRight className="w-4 h-4" />
+                {t("subscribe")} <ArrowRight className="w-4 h-4" />
               </button>
             </div>
           </div>
@@ -56,19 +58,18 @@ export default function Footer() {
 
           {/* Quick Links */}
           <div>
-            <h4 className="font-display text-lg font-semibold mb-5">Quick Links</h4>
+            <h4 className="font-display text-lg font-semibold mb-5">{t("quickLinks")}</h4>
             <ul className="space-y-3 text-sm">
               {[
-                { to: "/", label: "Home" },
-                { to: "/products", label: "Products" },
-                { to: "/about", label: "About Us" },
-                { to: "/contact", label: "Contact" },
-                { to: "/login", label: "Login" },
-                { to: "/dashboard", label: "My Orders" },
+                { to: "/", key: "home" },
+                { to: "/products", key: "products" },
+                { to: "/about", key: "about" },
+                { to: "/contact", key: "contact" },
+                { to: "/login", key: "login" },
               ].map((link) => (
                 <li key={link.to}>
                   <Link to={link.to} className="text-primary-foreground/70 hover:text-primary-foreground hover:translate-x-1 inline-block transition-all">
-                    → {link.label}
+                    → {t(link.key)}
                   </Link>
                 </li>
               ))}
@@ -77,7 +78,7 @@ export default function Footer() {
 
           {/* Crops */}
           <div>
-            <h4 className="font-display text-lg font-semibold mb-5">Our Crops</h4>
+            <h4 className="font-display text-lg font-semibold mb-5">{t("ourCrops")}</h4>
             <ul className="space-y-3 text-sm">
               {["Tomato", "Chili", "Brinjal", "Capsicum", "Watermelon", "Cucumber"].map((crop) => (
                 <li key={crop}>
@@ -91,7 +92,7 @@ export default function Footer() {
 
           {/* Contact */}
           <div>
-            <h4 className="font-display text-lg font-semibold mb-5">Contact Us</h4>
+            <h4 className="font-display text-lg font-semibold mb-5">{t("contactUs")}</h4>
             <ul className="space-y-4 text-sm">
               <li className="flex items-start gap-3">
                 <div className="w-9 h-9 rounded-lg bg-primary-foreground/10 flex items-center justify-center shrink-0 mt-0.5">
@@ -129,11 +130,11 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-primary-foreground/10 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-primary-foreground/50">
-          <p>© 2025 Sanap Hi-Tech Nursery. All rights reserved.</p>
+          <p>© 2025 Sanap Hi-Tech Nursery. {t("allRightsReserved")}.</p>
           <div className="flex gap-6">
-            <span>Privacy Policy</span>
-            <span>Terms & Conditions</span>
-            <span>Refund Policy</span>
+            <span>{t("privacyPolicy")}</span>
+            <span>{t("termsConditions")}</span>
+            <span>{t("refundPolicy")}</span>
           </div>
         </div>
       </div>

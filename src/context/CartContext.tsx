@@ -14,6 +14,7 @@ interface CartContextType {
   updateQuantity: (variety_id: number, quantity: number) => Promise<void>;
   updateDelivery: (variety_id: number, delivery_type: "local" | "250km") => Promise<void>;
   clearItems: () => Promise<void>;
+  clearCart: () => Promise<void>; // alias for backward compat
   totalItems: number;
   refetch: () => Promise<void>;
 }
@@ -93,7 +94,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   return (
     <CartContext.Provider value={{
       items, loading,
-      addItem, removeItem, updateQuantity, updateDelivery, clearItems,
+      addItem, removeItem, updateQuantity, updateDelivery,
+      clearItems,
+      clearCart: clearItems,
       totalItems, refetch,
     }}>
       {children}

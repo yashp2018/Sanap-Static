@@ -4,6 +4,20 @@ import { Search, ChevronLeft, ChevronRight, FileText } from "lucide-react";
 import { motion } from "framer-motion";
 import { fetchCategories, fetchCrops, fetchVarieties, ApiCategory, ApiCrop } from "@/services/api";
 import { sampleVarieties } from "@/data/products";
+import tomatoAryaman from "@/assets/vegetables/Aryaman.png";
+import chilliImg from "@/assets/vegetables/Chilli.png";
+import brinjalImg from "@/assets/vegetables/Brinjal.png";
+import capsicumImg from "@/assets/vegetables/Capsicum.png";
+import cucumberImg from "@/assets/vegetables/cucumber.png";
+import cabbageImg from "@/assets/vegetables/Cabbage.png";
+import cauliflowerImg from "@/assets/vegetables/Cauliflower.png";
+import bitterGourdImg from "@/assets/vegetables/bitter Gourd.png";
+import watermelonImg from "@/assets/vegetables/Watermelon.png";
+import sugarQueenImg from "@/assets/vegetables/Suger Queen.png";
+import maxImg from "@/assets/vegetables/Max.png";
+import papayaImg from "@/assets/vegetables/Papaya.png";
+import edenOrangeImg from "@/assets/vegetables/Eden Orange.png";
+import freshOrangeImg from "@/assets/vegetables/Fresh Orange.png";
 import ProductCard from "@/components/ProductCard";
 import VarietyComparison from "@/components/VarietyComparison";
 import PDFCatalogDownload from "@/components/PDFCatalogDownload";
@@ -60,7 +74,7 @@ export default function Products() {
           delivery250kmCharge: Number(v.delivery_250km_charge)  || 0,
           durationDays:        Number(v.duration_days)          || 28,
           stock:               Number(v.stock)                  || 0,
-          image:               v.image_url || '/SA.png',
+          image:               v.image_url || (v.crop_slug === 'tomato' ? tomatoAryaman : v.crop_slug === 'chili' ? chilliImg : v.crop_slug === 'brinjal' ? brinjalImg : v.crop_slug === 'capsicum' ? capsicumImg : v.crop_slug === 'cucumber' ? cucumberImg : v.crop_slug === 'cabbage' ? cabbageImg : v.crop_slug === 'cauliflower' ? cauliflowerImg : v.crop_slug === 'bittergourd' ? bitterGourdImg : v.crop_slug === 'watermelon' ? (v.slug === 'wm-sugarqueen' ? sugarQueenImg : v.slug === 'wm-max' ? maxImg : watermelonImg) : v.crop_slug === 'papaya' ? papayaImg : v.crop_slug === 'marigold' ? (v.slug === 'mar-freshorange' ? freshOrangeImg : edenOrangeImg) : '/SA.png'),
           availableMonths:     v.available_months || [],
           cropName:            v.crop_name  || '',
           company:             v.company    || '',

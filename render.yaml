@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: sanap-nursery
+    runtime: node
+    rootDir: .
+    buildCommand: npm run build:render
+    startCommand: npm run start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: sanap-nursery-db
+          property: connectionString
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: FRONTEND_ORIGIN
+        value: https://sanap-nursery.onrender.com  # update after deploy
+
+databases:
+  - name: sanap-nursery-db
+    databaseName: nursery_db
+    user: nursery_user
+    plan: free

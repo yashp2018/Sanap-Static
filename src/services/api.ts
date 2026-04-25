@@ -185,6 +185,12 @@ export const getOrders = () =>
 export const getOrder = (orderNumber: string) =>
   api<{ success: true; data: ApiOrder }>(`/orders/${orderNumber}`);
 
+export const cancelOrder = (orderNumber: string, reason: string) =>
+  api<{ success: true; message: string }>(`/orders/${orderNumber}/cancel`, {
+    method: "PATCH",
+    body: JSON.stringify({ reason }),
+  });
+
 // ── Price helpers ────────────────────────────────────────────
 export function resolvePrice(v: ApiVariety | ApiCartItem, quantity: number): number {
   const p30 = Number((v as ApiVariety).price_30k ?? (v as ApiCartItem).price_30k);

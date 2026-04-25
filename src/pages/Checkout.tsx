@@ -13,7 +13,7 @@ function itemTotal(item: ApiCartItem): number {
 }
 
 export default function Checkout() {
-  const { items, clearCart } = useCart();
+  const { items, clearItems } = useCart();
   const navigate = useNavigate();
   const [paymentMethod, setPaymentMethod] = useState<"razorpay" | "cod" | "bank">("razorpay");
   const [form, setForm] = useState({
@@ -51,7 +51,7 @@ export default function Checkout() {
         payment_method: paymentMethod,
       });
       toast.success(`Order placed! Order #${res.data.order_number}`);
-      clearCart();
+      clearItems();
       navigate("/dashboard");
     } catch (err: any) {
       toast.error(err.message || "Failed to place order");
