@@ -61,7 +61,7 @@ export default function Infrastructure() {
         <div className="absolute inset-0 bg-black/40" />
         <div className="container-nursery relative z-10 text-center">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}>
-            <p className="text-accent text-sm font-semibold mb-3">World-Class Facilities</p>
+            <p className="text-green-300 text-sm font-semibold tracking-widest uppercase mb-3">World-Class Facilities</p>
             <h1 className="font-display text-4xl md:text-6xl font-bold text-white mb-4">
               Sanap Hi-Tech Nursery's<br />Infrastructure
             </h1>
@@ -73,8 +73,17 @@ export default function Infrastructure() {
       </section>
 
       {/* Infrastructure Cards */}
-      <section className="py-20 bg-background">
+      <section className="py-20 bg-gradient-to-b from-background via-secondary/30 to-background">
         <div className="container-nursery max-w-5xl">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-12"
+          >
+            <span className="text-sm font-semibold text-primary uppercase tracking-[0.2em]">Our Facilities</span>
+            <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mt-2">World-Class Infrastructure</h2>
+          </motion.div>
           <div className="space-y-4">
             {infrastructureItems.map((item, index) => (
               <motion.div
@@ -83,36 +92,50 @@ export default function Infrastructure() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
-                className="bg-card border-2 border-border rounded-2xl overflow-hidden shadow-card"
+                className={`rounded-2xl overflow-hidden shadow-card border-2 transition-all duration-300 ${
+                  openIndex === index
+                    ? "border-primary bg-gradient-to-br from-primary/5 via-card to-secondary/20"
+                    : "border-border bg-card hover:border-primary/40"
+                }`}
               >
                 <button
                   onClick={() => setOpenIndex(openIndex === index ? null : index)}
-                  className="w-full flex items-center justify-between p-6 text-left hover:bg-muted/50 transition-colors"
+                  className="w-full flex items-center justify-between p-6 text-left"
                 >
-                  <h3 className="font-display text-xl md:text-2xl font-bold text-foreground">
-                    {item.title}
-                  </h3>
+                  <div className="flex items-center gap-4">
+                    <span className={`w-9 h-9 rounded-xl flex items-center justify-center text-sm font-bold shrink-0 transition-all ${
+                      openIndex === index ? "gradient-cta text-white shadow-md" : "bg-muted text-muted-foreground"
+                    }`}>
+                      {index + 1}
+                    </span>
+                    <h3 className={`font-display text-xl md:text-2xl font-bold transition-colors ${
+                      openIndex === index ? "text-primary" : "text-foreground"
+                    }`}>
+                      {item.title}
+                    </h3>
+                  </div>
                   <ChevronDown
-                    className={`w-6 h-6 text-primary transition-transform duration-300 ${
+                    className={`w-6 h-6 text-primary transition-transform duration-300 shrink-0 ${
                       openIndex === index ? "rotate-180" : ""
                     }`}
                   />
                 </button>
-                
+
                 <div
-                  className={`transition-all duration-300 overflow-hidden ${
+                  className={`transition-all duration-500 overflow-hidden ${
                     openIndex === index ? "max-h-[2000px]" : "max-h-0"
                   }`}
                 >
-                  <div className="p-6 pt-0 space-y-6">
-                    <p className="text-foreground/80 leading-relaxed">{item.description}</p>
+                  <div className="px-6 pb-6 space-y-6">
+                    <div className="h-px bg-gradient-to-r from-primary/30 via-primary/10 to-transparent" />
+                    <p className="text-foreground/80 leading-relaxed pl-[52px]">{item.description}</p>
                     <div className="grid grid-cols-3 gap-4">
                       {item.images.map((img, i) => (
                         <img
                           key={i}
                           src={img}
                           alt={`${item.title} ${i + 1}`}
-                          className="aspect-video bg-muted rounded-xl overflow-hidden object-cover w-full"
+                          className="aspect-video bg-muted rounded-xl overflow-hidden object-cover w-full shadow-sm"
                           loading="lazy"
                         />
                       ))}

@@ -110,6 +110,35 @@ router.post("/login", async (req, res) => {
   }
 });
 
+// ── POST /api/auth/admin-login (email-only) ─────────────────
+router.post("/admin-login", async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email || !email.trim())
+      return res.status(400).json({ success: false, message: "Email is required" });
+
+    const { rows } = await pool.query(
+      "SELECT * FROM users WHERE LOWER(email) = LOWER($1) AND role = 'admin' LIMIT 1",
+      [email.trim()]
+    );
+
+    if (rows.length === 0)
+      return res.status(401).json({ success: false, message: "No admin account found for this email." });
+
+    const user = rows[0];
+
+    // Set session — same as normal login
+    req.session.userId = user.id;
+    req.session.role   = user.role;
+
+    return res.json({ success: true, user: safeUser(user) });
+  } catch (err) {
+    console.error("Admin email login error:", err.message);
+    return res.status(500).json({ success: false, message: "Login failed" });
+  }
+});
+
 // ── POST /api/auth/logout ─────────────────────────────────────
 router.post("/logout", (req, res) => {
   req.session.destroy((err) => {

@@ -89,15 +89,15 @@ export const categories: Category[] = [
     name: "Vegetable",
     icon: "🥬",
     crops: [
-      { id: "tomato", name: "Tomato", categoryId: "vegetables", image: productTomato, varieties: 28 },
-      { id: "chili", name: "Chili", categoryId: "vegetables", image: productChili, varieties: 20 },
-      { id: "brinjal", name: "Brinjal", categoryId: "vegetables", image: productBrinjal, varieties: 3 },
-      { id: "capsicum", name: "Capsicum", categoryId: "vegetables", image: productCapsicum, varieties: 3 },
-      { id: "cucumber", name: "Cucumber", categoryId: "vegetables", image: productCucumber, varieties: 3 },
-      { id: "cabbage", name: "Cabbage", categoryId: "vegetables", image: productCapsicum, varieties: 18 },
-      { id: "cauliflower", name: "Cauliflower", categoryId: "vegetables", image: productCapsicum, varieties: 16 },
-      { id: "bittergourd", name: "Bitter Gourd", categoryId: "vegetables", image: productCucumber, varieties: 5 },
-      { id: "bottlegourd", name: "Bottle Gourd", categoryId: "vegetables", image: productCucumber, varieties: 3 },
+      { id: "tomato",      name: "Tomato",       categoryId: "vegetables", image: tomatoAryaman,  varieties: 28 },
+      { id: "chili",       name: "Chili",        categoryId: "vegetables", image: chilliImg,      varieties: 20 },
+      { id: "brinjal",     name: "Brinjal",      categoryId: "vegetables", image: brinjalImg,     varieties: 3  },
+      { id: "capsicum",    name: "Capsicum",     categoryId: "vegetables", image: capsicumImg,    varieties: 3  },
+      { id: "cucumber",    name: "Cucumber",     categoryId: "vegetables", image: cucumberImg,    varieties: 3  },
+      { id: "cabbage",     name: "Cabbage",      categoryId: "vegetables", image: cabbageImg,     varieties: 18 },
+      { id: "cauliflower", name: "Cauliflower",  categoryId: "vegetables", image: cauliflowerImg, varieties: 16 },
+      { id: "bittergourd", name: "Bitter Gourd", categoryId: "vegetables", image: bitterGourdImg, varieties: 5  },
+      { id: "bottlegourd", name: "Bottle Gourd", categoryId: "vegetables", image: cucumberImg,    varieties: 3  },
     ],
   },
   {
@@ -105,9 +105,9 @@ export const categories: Category[] = [
     name: "Fruit ",
     icon: "🍉",
     crops: [
-      { id: "watermelon", name: "Watermelon", categoryId: "fruits", image: productWatermelon, varieties: 9 },
-      { id: "muskmelon", name: "Muskmelon", categoryId: "fruits", image: productWatermelon, varieties: 1 },
-      { id: "papaya", name: "Papaya", categoryId: "fruits", image: productWatermelon, varieties: 5 },
+      { id: "watermelon", name: "Watermelon", categoryId: "fruits", image: watermelonImg, varieties: 9 },
+      { id: "muskmelon",  name: "Muskmelon",  categoryId: "fruits", image: watermelonImg, varieties: 1 },
+      { id: "papaya",     name: "Papaya",     categoryId: "fruits", image: papayaImg,     varieties: 5 },
     ],
   },
   {
@@ -115,16 +115,7 @@ export const categories: Category[] = [
     name: "Flower ",
     icon: "🌸",
     crops: [
-      { id: "marigold", name: "Marigold", categoryId: "flowers", image: productCapsicum, varieties: 9 },
-    ],
-  },
-  {
-    id: "others",
-    name: "Other Plants",
-    icon: "🌿",
-    crops: [
-      { id: "sugarcane", name: "Sugar Cane (UUS)", categoryId: "others", image: productCucumber, varieties: 2 },
-      { id: "drumstick", name: "Drum Stick", categoryId: "others", image: productCucumber, varieties: 1 },
+      { id: "marigold", name: "Marigold", categoryId: "flowers", image: edenOrangeImg, varieties: 9 },
     ],
   },
 ];

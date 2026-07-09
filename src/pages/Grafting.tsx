@@ -33,7 +33,7 @@ export default function Grafting() {
               initial={{ opacity: 0, scale: 0.5 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.2 }}
-              className="inline-block bg-accent text-accent-foreground px-6 py-2 rounded-full font-semibold text-sm mb-6"
+              className="inline-block bg-green-900 text-green-100 border border-green-700 px-6 py-2 rounded-full font-semibold text-sm mb-6"
             >
               Advanced Agriculture Technology
             </motion.span>

@@ -1,13 +1,59 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowRight, Award, Users, Truck, Sprout, Shield, Microscope, Clock, Star, Quote, ChevronLeft, ChevronRight, Play, Trophy, Dna, PackageCheck, BadgeDollarSign, Leaf, CheckCircle } from "lucide-react";
+import { ArrowRight, Medal, Users, Truck, Sprout, ShieldCheck, FlaskConical, Clock3, Star, Quote, ChevronLeft, ChevronRight, Trophy, Dna, PackageCheck, BadgeDollarSign, Leaf, CheckCircle2, HeartHandshake, MapPin } from "lucide-react";
 import heroVideo from "@/assets/Hero-nursery.mp4";
-import { categories, sampleVarieties } from "@/data/products";
 import ProductCard from "@/components/ProductCard";
 import { useCountUp } from "@/hooks/useCountUp";
 import { useState, useRef, useEffect } from "react";
 import FarmerTestimonialVideos from "@/components/FarmerTestimonialVideos";
 import { useLanguage } from "@/context/LanguageContext";
+import { fetchCategories, fetchCrops, fetchVarieties, type ApiCategory, type ApiCrop, type ApiVariety } from "@/services/api";
+import tomatoAryaman from "@/assets/vegetables/Aryaman.png";
+import chilliImg from "@/assets/vegetables/Chilli.png";
+import brinjalImg from "@/assets/vegetables/Brinjal.png";
+import capsicumImg from "@/assets/vegetables/Capsicum.png";
+import cucumberImg from "@/assets/vegetables/cucumber.png";
+import cabbageImg from "@/assets/vegetables/Cabbage.png";
+import cauliflowerImg from "@/assets/vegetables/Cauliflower.png";
+import bitterGourdImg from "@/assets/vegetables/bitter Gourd.png";
+import watermelonImg from "@/assets/vegetables/Watermelon.png";
+import sugarQueenImg from "@/assets/vegetables/Suger Queen.png";
+import maxImg from "@/assets/vegetables/Max.png";
+import papayaImg from "@/assets/vegetables/Papaya.png";
+import edenOrangeImg from "@/assets/vegetables/Eden Orange.png";
+import freshOrangeImg from "@/assets/vegetables/Fresh Orange.png";
+
+function cropImage(v: ApiVariety): string {
+  if (v.image_url) return v.image_url;
+  const s = v.crop_slug;
+  if (s === "tomato") return tomatoAryaman;
+  if (s === "chili") return chilliImg;
+  if (s === "brinjal") return brinjalImg;
+  if (s === "capsicum") return capsicumImg;
+  if (s === "cucumber") return cucumberImg;
+  if (s === "cabbage") return cabbageImg;
+  if (s === "cauliflower") return cauliflowerImg;
+  if (s === "bittergourd") return bitterGourdImg;
+  if (s === "watermelon") return v.slug === "wm-sugarqueen" ? sugarQueenImg : v.slug === "wm-max" ? maxImg : watermelonImg;
+  if (s === "papaya") return papayaImg;
+  if (s === "marigold") return v.slug === "mar-freshorange" ? freshOrangeImg : edenOrangeImg;
+  
+}
+
+function cropImageByCropSlug(slug: string): string {
+  if (slug === "tomato") return tomatoAryaman;
+  if (slug === "chili") return chilliImg;
+  if (slug === "brinjal") return brinjalImg;
+  if (slug === "capsicum") return capsicumImg;
+  if (slug === "cucumber") return cucumberImg;
+  if (slug === "cabbage") return cabbageImg;
+  if (slug === "cauliflower") return cauliflowerImg;
+  if (slug === "bittergourd") return bitterGourdImg;
+  if (slug === "watermelon") return watermelonImg;
+  if (slug === "papaya") return papayaImg;
+  if (slug === "marigold") return edenOrangeImg;
+  
+}
 
 // Gallery Images
 import customerVisit from "@/assets/img/Customer-visit.jpeg";
@@ -25,19 +71,19 @@ import img11 from "@/assets/img/IMG-20251221-WA0046.jpg.jpeg";
 import processImage from "@/assets/img/Process.png";
 
 const stats = [
-  { icon: Award, value: 28, suffix: "+", labelKey: "yearsExp" },
-  { icon: Sprout, value: 10, suffix: "L+", labelKey: "plantsSupplied" },
-  { icon: Users, value: 5000, suffix: "+", labelKey: "happyFarmers" },
-  { icon: Truck, value: 15, suffix: "+", labelKey: "statesCovered" },
+  { icon: Medal,        value: 28,    suffix: "+",  labelKey: "yearsExp" },
+  { icon: Sprout,       value: 10,    suffix: "L+", labelKey: "plantsSupplied" },
+  { icon: Users,        value: 50000, suffix: "+",  labelKey: "happyFarmers" },
+  { icon: MapPin,       value: 15,    suffix: "+",  labelKey: "statesCovered" },
 ];
 
 const whyChooseUs = [
-  { icon: Shield, titleKey: "diseaseResistant", descKey: "diseaseResistantDesc" },
-  { icon: Microscope, titleKey: "advancedGrafting", descKey: "advancedGraftingDesc" },
-  { icon: Clock, titleKey: "timelyDelivery", descKey: "timelyDeliveryDesc" },
-  { icon: Star, titleKey: "premiumQuality", descKey: "premiumQualityDesc" },
-  { icon: Truck, titleKey: "panIndiaShipping", descKey: "panIndiaShippingDesc" },
-  { icon: Users, titleKey: "expertSupport", descKey: "expertSupportDesc" },
+  { icon: ShieldCheck,    titleKey: "diseaseResistant", descKey: "diseaseResistantDesc" },
+  { icon: FlaskConical,   titleKey: "advancedGrafting",  descKey: "advancedGraftingDesc" },
+  { icon: Clock3,         titleKey: "timelyDelivery",    descKey: "timelyDeliveryDesc" },
+  { icon: Star,           titleKey: "premiumQuality",    descKey: "premiumQualityDesc" },
+  { icon: Truck,          titleKey: "panIndiaShipping",  descKey: "panIndiaShippingDesc" },
+  { icon: HeartHandshake, titleKey: "expertSupport",     descKey: "expertSupportDesc" },
 ];
 
 const testimonials = [
@@ -78,8 +124,41 @@ function StatCard({ stat, label }: { stat: typeof stats[0]; label: string }) {
 export default function Index() {
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
   const [cropSliderPos, setCropSliderPos] = useState(0);
-  const allCrops = categories.flatMap(c => c.crops);
+  const [apiCategories, setApiCategories] = useState<ApiCategory[]>([]);
+  const [apiCrops, setApiCrops]           = useState<ApiCrop[]>([]);
+  const [featuredVarieties, setFeaturedVarieties] = useState<any[]>([]);
   const { t } = useLanguage();
+
+  useEffect(() => {
+    fetchCategories().then(r => setApiCategories(r.data)).catch(() => {});
+    fetchCrops().then(r => setApiCrops(r.data)).catch(() => {});
+    fetchVarieties().then(r => {
+      setFeaturedVarieties(r.data.slice(0, 6).map(v => ({
+        ...v,
+        image: cropImage(v),
+        minOrderQty: Number(v.min_order_qty) || 1000,
+        price15k: Number(v.price_15k) || 0,
+        price30k: Number(v.price_30k) || 0,
+        priceExFactory: Number(v.price_ex_factory) || 0,
+        deliveryLocalCharge: Number(v.delivery_local_charge) || 0,
+        delivery250kmCharge: Number(v.delivery_250km_charge) || 0,
+        durationDays: Number(v.duration_days) || 28,
+        stock: Number(v.stock) || 0,
+        cropName: v.crop_name || "",
+        availableMonths: v.available_months || [],
+      })));
+    }).catch(() => {});
+  }, []);
+
+  const EXCLUDED_CROPS = ["muskmelon", "sugarcane", "drumstick"];
+  const sliderCrops = apiCrops.filter(c => !EXCLUDED_CROPS.includes(c.slug));
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCropSliderPos(prev => (prev + 1 >= sliderCrops.length - 3 ? 0 : prev + 1));
+    }, 2500);
+    return () => clearInterval(interval);
+  }, [sliderCrops.length]);
 
   return (
     <div className="min-h-screen">
@@ -89,8 +168,7 @@ export default function Index() {
           <video autoPlay loop muted playsInline className="w-full h-full object-cover">
             <source src={heroVideo} type="video/mp4" />
           </video>
-          {/* Light bottom gradient only — keeps text readable without hiding the video */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/55 to-black/30" />
         </div>
 
         {/* Removed blur blobs — they were fogging the video */}
@@ -113,7 +191,7 @@ export default function Index() {
             </motion.span>
 
             {/* Heading */}
-            <h1 className="font-display text-4xl md:text-5xl lg:text-7xl font-bold leading-[1.1] mb-6" style={{ textShadow: "0 2px 12px rgba(0,0,0,0.8)" }}>
+            <h1 className="font-display text-4xl md:text-5xl lg:text-7xl font-bold leading-[1.1] mb-6" style={{ textShadow: "0 2px 20px rgba(0,0,0,1), 0 4px 40px rgba(0,0,0,1)" }}>
               <motion.span
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -137,8 +215,8 @@ export default function Index() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.8 }}
-              className="text-lg md:text-xl text-white mb-10 max-w-xl font-sans leading-relaxed"
-              style={{ textShadow: "0 1px 8px rgba(0,0,0,0.9)" }}
+              className="text-lg md:text-xl text-white mb-10 max-w-xl font-sans leading-relaxed bg-black/50 backdrop-blur-md rounded-2xl px-5 py-4 border border-white/10"
+              style={{ textShadow: "0 1px 6px rgba(0,0,0,0.9)" }}
             >
               {t("heroDescription")}
             </motion.p>
@@ -173,8 +251,8 @@ export default function Index() {
             >
               {[
                 { Icon: Trophy, key: "isoCertified" },
-                { Icon: Dna, key: "japaneseGrafting" },
-                { Icon: Truck, key: "panIndiaDelivery" },
+                { Icon: FlaskConical, key: "japaneseGrafting" },
+                { Icon: PackageCheck, key: "panIndiaDelivery" },
                 { Icon: BadgeDollarSign, key: "b2bPricing" },
               ].map(({ Icon, key }) => (
                 <span
@@ -188,22 +266,7 @@ export default function Index() {
           </motion.div>
         </div>
 
-        {/* Scroll indicator */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.5 }}
-          className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
-        >
-          <span className="text-white text-xs font-sans uppercase tracking-widest drop-shadow-lg">{t("scroll")}</span>
-          <div className="w-6 h-10 border-2 border-white/60 rounded-full flex justify-center pt-2">
-            <motion.div
-              animate={{ y: [0, 12, 0] }}
-              transition={{ duration: 1.5, repeat: Infinity }}
-              className="w-1.5 h-1.5 bg-white rounded-full"
-            />
-          </div>
-        </motion.div>
+        
       </section>
 
       {/* ===== STATS WITH ANIMATED COUNTERS ===== */}
@@ -242,7 +305,9 @@ export default function Index() {
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {categories.map((cat, i) => (
+            {apiCategories.map((cat, i) => {
+              const catCrops = apiCrops.filter(c => c.category_slug === cat.slug);
+              return (
               <motion.div
                 key={cat.id}
                 initial={{ opacity: 0, y: 30 }}
@@ -251,7 +316,7 @@ export default function Index() {
                 viewport={{ once: true }}
               >
                 <Link
-                  to={`/products?category=${cat.id}`}
+                  to={`/products?category=${cat.slug}`}
                   className="block bg-card rounded-2xl p-8 shadow-card hover:shadow-elevated transition-all hover:-translate-y-2 group border border-border/50"
                 >
                   <div className="w-14 h-14 rounded-2xl gradient-cta flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
@@ -261,10 +326,10 @@ export default function Index() {
                     {cat.name}
                   </h3>
                   <p className="text-sm text-muted-foreground mb-4">
-                    {cat.crops.length} {t("crops")} · {cat.crops.reduce((s, c) => s + c.varieties, 0)} {t("varietiesAvailable")}
+                    {catCrops.length} {t("crops")} · {catCrops.reduce((s, c) => s + Number(c.varieties), 0)} {t("varietiesAvailable")}
                   </p>
                   <div className="flex flex-wrap gap-2">
-                    {cat.crops.slice(0, 4).map((crop) => (
+                    {catCrops.slice(0, 4).map((crop) => (
                       <span key={crop.id} className="text-xs bg-secondary/50 text-secondary-foreground rounded-full px-3 py-1.5 font-medium flex items-center gap-1">
                         <Sprout className="w-3 h-3" /> {crop.name}
                       </span>
@@ -275,7 +340,8 @@ export default function Index() {
                   </div>
                 </Link>
               </motion.div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
@@ -303,7 +369,7 @@ export default function Index() {
                 <ChevronLeft className="w-5 h-5" />
               </button>
               <button
-                onClick={() => setCropSliderPos(Math.min(allCrops.length - 1, cropSliderPos + 1))}
+                onClick={() => setCropSliderPos(Math.min(sliderCrops.length - 1, cropSliderPos + 1))}
                 className="w-10 h-10 rounded-full border border-border flex items-center justify-center hover:bg-muted transition-colors"
               >
                 <ChevronRight className="w-5 h-5" />
@@ -313,7 +379,7 @@ export default function Index() {
 
           <div className="overflow-x-auto pb-4 -mx-4 px-4 scrollbar-hide">
             <div className="flex gap-6" style={{ transform: `translateX(-${cropSliderPos * 280}px)`, transition: "transform 0.4s ease" }}>
-              {allCrops.map((crop, i) => (
+              {sliderCrops.map((crop, i) => (
                 <motion.div
                   key={crop.id}
                   initial={{ opacity: 0, scale: 0.9 }}
@@ -322,14 +388,13 @@ export default function Index() {
                   viewport={{ once: true }}
                   className="min-w-[250px] md:min-w-[280px]"
                 >
-                  <Link to={`/products?crop=${crop.id}`} className="block group">
+                  <Link to={`/products?crop=${crop.slug}`} className="block group">
                     <div className="relative rounded-2xl overflow-hidden h-56 mb-4">
-                      <img src={crop.image} alt={crop.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-foreground/60 to-transparent" />
-                      <div className="absolute bottom-4 left-4">
-                        <h3 className="font-display text-xl font-bold text-primary-foreground">{crop.name}</h3>
-                        <p className="text-xs text-primary-foreground/80">{crop.varieties} varieties</p>
-                      </div>
+                      <img src={crop.image_url || cropImageByCropSlug(crop.slug)} alt={crop.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                    </div>
+                    <div className="px-1">
+                      <h3 className="font-display text-xl font-bold text-foreground group-hover:text-primary transition-colors">{crop.name}</h3>
+                      <p className="text-xs text-muted-foreground">{crop.varieties} varieties</p>
                     </div>
                   </Link>
                 </motion.div>
@@ -356,7 +421,7 @@ export default function Index() {
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {sampleVarieties.slice(0, 6).map((v, i) => (
+            {featuredVarieties.map((v, i) => (
               <motion.div
                 key={v.id}
                 initial={{ opacity: 0, y: 30 }}
@@ -422,98 +487,118 @@ export default function Index() {
       </section>
 
       {/* ===== GRAFTING PROCESS PREVIEW ===== */}
-      <section className="py-20 surface-warm" id="grafting-preview">
-        <div className="container-nursery">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-14"
-          >
-            <span className="text-sm font-semibold text-primary uppercase tracking-[0.2em] font-sans">Our Technology</span>
-            <h2 className="font-display text-3xl md:text-5xl font-bold text-foreground mt-3 mb-4">
-              Advanced Grafting Process
-            </h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">Combining the best qualities of two plants into one stronger, more productive unit using Japanese grafting technology.</p>
-          </motion.div>
+<section className="py-20 surface-warm" id="grafting-preview">
+  <div className="container-nursery">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      className="text-center mb-14"
+    >
+      <span className="text-sm font-semibold text-green-500 uppercase tracking-[0.2em] font-sans">Our Technology</span>
+      <h2 className="font-display text-4xl md:text-5xl font-bold text-foreground mt-3 mb-4">
+        Advanced Grafting Process
+      </h2>
+      <p className="text-muted-foreground max-w-2xl mx-auto">
+        Combining the best qualities of two plants into one stronger, more productive unit using Japanese grafting technology.
+      </p>
+    </motion.div>
 
-          <div className="grid md:grid-cols-2 gap-8 items-center mb-12">
-            <motion.div
-              initial={{ opacity: 0, x: -30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-            >
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-card p-6 rounded-2xl border-2 border-primary/20 hover-lift">
-                  <div className="w-12 h-12 rounded-xl gradient-cta flex items-center justify-center mb-3">
-                    <Leaf className="w-6 h-6 text-primary-foreground" />
-                  </div>
-                  <h3 className="font-display text-lg font-bold text-foreground mb-2">Scion</h3>
-                  <p className="text-sm text-muted-foreground">Upper portion producing quality fruits</p>
-                </div>
-                <div className="bg-card p-6 rounded-2xl border-2 border-primary/20 hover-lift">
-                  <div className="w-12 h-12 rounded-xl gradient-cta flex items-center justify-center mb-3">
-                    <Sprout className="w-6 h-6 text-primary-foreground" />
-                  </div>
-                  <h3 className="font-display text-lg font-bold text-foreground mb-2">Rootstock</h3>
-                  <p className="text-sm text-muted-foreground">Strong roots with disease resistance</p>
-                </div>
-                <div className="bg-card p-6 rounded-2xl border-2 border-accent/20 hover-lift col-span-2">
-                  <div className="w-12 h-12 rounded-xl bg-accent/20 flex items-center justify-center mb-3">
-                    <CheckCircle className="w-6 h-6 text-primary" />
-                  </div>
-                  <h3 className="font-display text-lg font-bold text-primary mb-2">Result: Superior Plant</h3>
-                  <p className="text-sm text-muted-foreground">98%+ survival rate with higher yields</p>
-                </div>
-              </div>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, x: 30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              className="space-y-4"
-            >
-              {[
-                { icon: Shield, title: "Disease Protection", desc: "Protects from soil-borne diseases" },
-                { icon: Sprout, title: "Stronger Growth", desc: "Enhanced root system and vigor" },
-                { icon: Star, title: "Higher Yield", desc: "Increased production and quality" },
-              ].map((benefit, i) => (
-                <motion.div
-                  key={benefit.title}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.1 }}
-                  viewport={{ once: true }}
-                  className="flex items-start gap-4 bg-card p-4 rounded-xl border border-border hover-lift"
-                >
-                  <div className="w-10 h-10 rounded-lg gradient-cta flex items-center justify-center flex-shrink-0">
-                    <benefit.icon className="w-5 h-5 text-primary-foreground" />
-                  </div>
-                  <div>
-                    <h4 className="font-display font-bold text-foreground mb-1">{benefit.title}</h4>
-                    <p className="text-sm text-muted-foreground">{benefit.desc}</p>
-                  </div>
-                </motion.div>
-              ))}
-            </motion.div>
+    {/* Balanced Left/Right Grid to match image_2a863c.png layout */}
+    <div className="grid md:grid-cols-2 gap-8 items-start max-w-6xl mx-auto mb-12">
+      
+      {/* LEFT COLUMN: Structural Components */}
+      <motion.div
+        initial={{ opacity: 0, x: -30 }}
+        whileInView={{ opacity: 1, x: 0 }}
+        viewport={{ once: true }}
+        className="space-y-6"
+      >
+        {/* Top Split Rows: Scion & Rootstock */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="bg-card p-6 rounded-2xl border border-green-200/60 bg-white shadow-sm">
+            <div className="w-10 h-10 rounded-xl bg-green-500 flex items-center justify-center mb-4">
+              <Sprout className="w-5 h-5 text-white" />
+            </div>
+            <h3 className="font-display text-xl font-bold text-foreground mb-2">Scion</h3>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Upper portion producing quality fruits
+            </p>
           </div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center"
-          >
-            <Link
-              to="/grafting"
-              className="inline-flex items-center gap-2 gradient-cta text-primary-foreground px-8 py-4 rounded-full font-semibold text-lg hover:shadow-elevated transition-all hover:scale-105 btn-ripple"
-            >
-              Learn About Grafting <ArrowRight className="w-5 h-5" />
-            </Link>
-          </motion.div>
+          <div className="bg-card p-6 rounded-2xl border border-green-200/60 bg-white shadow-sm">
+            <div className="w-10 h-10 rounded-xl bg-green-500 flex items-center justify-center mb-4">
+              <Sprout className="w-5 h-5 text-white" />
+            </div>
+            <h3 className="font-display text-xl font-bold text-foreground mb-2">Rootstock</h3>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Strong roots with disease resistance
+            </p>
+          </div>
         </div>
-      </section>
+
+        {/* Highlight Result Row */}
+        <div className="bg-card p-6 rounded-2xl border border-red-200/60 bg-white shadow-sm flex items-start gap-4">
+          <div className="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center flex-shrink-0">
+            <CheckCircle2 className="w-5 h-5 text-green-600" />
+          </div>
+          <div>
+            <h3 className="font-display text-lg font-bold text-green-600 mb-1">Result: Superior Plant</h3>
+            <p className="text-sm text-muted-foreground">
+              98%+ survival rate with higher yields
+            </p>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* RIGHT COLUMN: Clean Benefit Rows Stack */}
+      <motion.div
+        initial={{ opacity: 0, x: 30 }}
+        whileInView={{ opacity: 1, x: 0 }}
+        viewport={{ once: true }}
+        className="space-y-4"
+      >
+        {[
+          { icon: ShieldCheck, title: "Disease Protection", desc: "Protects from soil-borne diseases" },
+          { icon: Sprout,      title: "Stronger Growth",    desc: "Enhanced root system and vigor" },
+          { icon: Star,        title: "Higher Yield",       desc: "Increased production and quality" },
+        ].map((benefit, i) => (
+          <motion.div
+            key={benefit.title}
+            initial={{ opacity: 0, y: 15 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.1 }}
+            viewport={{ once: true }}
+            className="flex items-center gap-4 bg-white p-5 rounded-xl border border-gray-100 shadow-sm"
+          >
+            <div className="w-10 h-10 rounded-xl bg-green-500 flex items-center justify-center flex-shrink-0">
+              <benefit.icon className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h4 className="font-display font-bold text-foreground text-base mb-0.5">{benefit.title}</h4>
+              <p className="text-sm text-muted-foreground">{benefit.desc}</p>
+            </div>
+          </motion.div>
+        ))}
+      </motion.div>
+    </div>
+
+    {/* Clean CTA Trigger Button */}
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      className="text-center"
+    >
+      <Link
+        to="/grafting"
+        className="inline-flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white px-8 py-4 rounded-full font-semibold text-lg transition-all hover:scale-105"
+      >
+        Learn About Grafting <ArrowRight className="w-5 h-5" />
+      </Link>
+    </motion.div>
+  </div>
+</section>
 
       {/* ===== PROCESS DIAGRAM ===== */}
       <section className="py-20" id="process-preview">
@@ -782,9 +867,7 @@ export default function Index() {
         </div>
       </section>
 
-      {/* ===== FARMER TESTIMONIAL VIDEOS ===== */}
-      <FarmerTestimonialVideos />
-
+      
       {/* ===== CTA SECTION ===== */}
       <section className="py-20 surface-green" id="cta">
         <div className="container-nursery">

@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { ShoppingCart, Menu, X, User, ChevronDown, Globe, LogOut, LayoutDashboard, Sprout, ArrowRight, Settings } from "lucide-react";
+import { ShoppingCart, Menu, X, UserRound, ChevronDown, Globe, LogOut, LayoutDashboard, Sprout, ArrowRight, Settings } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
@@ -20,6 +20,9 @@ export default function Header() {
   const [productsOpen, setProductsOpen]   = useState(false);
   const [langOpen, setLangOpen]           = useState(false);
   const [userOpen, setUserOpen]           = useState(false);
+  const langCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const userCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const productsCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const { language, setLanguage, t } = useLanguage();
   const { totalItems }               = useCart();
@@ -43,11 +46,11 @@ export default function Header() {
 
   const navLinks = [
     { to: "/",              key: "home" },
+    { to: "/about",         key: "about" },
     { to: "/grafting",      key: "grafting" },
     { to: "/process",       key: "process" },
     { to: "/infrastructure",key: "infrastructure" },
     { to: "/gallery",       key: "gallery" },
-    { to: "/about",         key: "about" },
     { to: "/contact",       key: "contact" },
   ] as const;
 
@@ -59,30 +62,31 @@ export default function Header() {
         scrolled ? "glass-effect shadow-elevated" : isHome ? "bg-transparent" : "glass-effect"
       }`}
     >
-      <div className="container-nursery flex items-center justify-between h-16 md:h-20">
+      <div className="container-nursery flex items-center justify-between h-20 md:h-24">
 
         {/* ── Logo ── */}
         <Link to="/" className="group shrink-0">
-          <img
-            src={logo}
-            alt="Sanap Hi-Tech Nursery"
-            className="w-12 h-12 md:w-14 md:h-14 rounded-full shadow-elevated group-hover:scale-110 group-hover:rotate-12 transition-all duration-300 border-2 border-primary/20"
-          />
+          <div className="w-16 h-16 md:w-20 md:h-20 rounded-full overflow-hidden bg-white shadow-elevated border-2 border-primary/20 ring-2 ring-primary/10 flex items-center justify-center transition-all duration-300 group-hover:scale-110">
+            <img src={logo} alt="Sanap Hi-Tech Nursery" className="w-full h-full object-cover" />
+          </div>
         </Link>
 
         {/* ── Desktop Nav ── */}
         <nav className="hidden lg:flex items-center gap-1">
 
-          {/* Home */}
           <Link to="/" className="group relative px-3 py-2">
-            <span className="font-medium text-foreground group-hover:text-primary transition-colors text-sm">{t("home")}</span>
+            <span className="font-medium text-foreground group-hover:text-primary transition-colors text-lg">{t("home")}</span>
             <span className="absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-primary to-accent scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
           </Link>
 
           {/* Products dropdown */}
-          <div className="relative" onMouseEnter={() => setProductsOpen(true)} onMouseLeave={() => setProductsOpen(false)}>
+          <div
+            className="relative"
+            onMouseEnter={() => { if (productsCloseTimer.current) clearTimeout(productsCloseTimer.current); setProductsOpen(true); }}
+            onMouseLeave={() => { productsCloseTimer.current = setTimeout(() => setProductsOpen(false), 300); }}
+          >
             <button className="group relative px-3 py-2 flex items-center gap-1">
-              <span className="font-medium text-foreground group-hover:text-primary transition-colors text-sm">{t("products")}</span>
+              <span className="font-medium text-foreground group-hover:text-primary transition-colors text-lg">{t("products")}</span>
               <ChevronDown className={`w-3.5 h-3.5 text-foreground group-hover:text-primary transition-all duration-200 ${productsOpen ? "rotate-180" : ""}`} />
               <span className="absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-primary to-accent scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
             </button>
@@ -114,10 +118,9 @@ export default function Header() {
             </AnimatePresence>
           </div>
 
-          {/* Rest of nav links */}
           {navLinks.slice(1).map(link => (
             <Link key={link.to} to={link.to} className="group relative px-3 py-2">
-              <span className="font-medium text-foreground group-hover:text-primary transition-colors text-sm">{t(link.key)}</span>
+              <span className="font-medium text-foreground group-hover:text-primary transition-colors text-lg">{t(link.key)}</span>
               <span className="absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-primary to-accent scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
             </Link>
           ))}
@@ -126,33 +129,38 @@ export default function Header() {
         {/* ── Right Actions ── */}
         <div className="flex items-center gap-2">
 
-          {/* Language Switcher — in navbar */}
-          <div className="relative" onMouseLeave={() => setLangOpen(false)}>
+          {/* Language Switcher */}
+          <div
+            className="relative"
+            onMouseEnter={() => { if (langCloseTimer.current) clearTimeout(langCloseTimer.current); setLangOpen(true); }}
+            onMouseLeave={() => { langCloseTimer.current = setTimeout(() => setLangOpen(false), 300); }}
+          >
             <button
-              onMouseEnter={() => setLangOpen(true)}
               onClick={() => setLangOpen(v => !v)}
               className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-border/50 hover:border-primary/40 hover:bg-muted transition-all text-sm font-semibold text-foreground"
             >
               <Globe className="w-3.5 h-3.5 text-primary" />
               <span>{currentLang.short}</span>
-              <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${langOpen ? "rotate-180" : ""}`} />
+              <ChevronDown className={`w-3 h-3 transition-transform duration-300 ${langOpen ? "rotate-180" : ""}`} />
             </button>
             <AnimatePresence>
               {langOpen && (
                 <motion.div
-                  initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }}
-                  transition={{ duration: 0.15 }}
-                  className="absolute right-0 top-full mt-2 min-w-[130px] bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden z-[100]"
+                  initial={{ opacity: 0, y: -5, scale: 0.97 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -5, scale: 0.97 }}
+                  transition={{ duration: 0.2, ease: "easeOut" }}
+                  className="absolute right-0 top-full mt-2 min-w-[150px] bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-[100]"
                 >
                   {LANGS.map(lang => (
                     <button
                       key={lang.code}
                       onClick={() => { setLanguage(lang.code); setLangOpen(false); }}
-                      className={`flex items-center gap-2 w-full px-4 py-2.5 text-left text-sm font-medium transition-colors ${
+                      className={`flex items-center gap-3 w-full px-5 py-3.5 text-left text-sm font-medium transition-colors ${
                         language === lang.code ? "bg-primary text-white" : "text-gray-700 hover:bg-gray-50"
                       }`}
                     >
-                      {language === lang.code && <span className="w-1.5 h-1.5 rounded-full bg-white shrink-0" />}
+                      {language === lang.code && <span className="w-2 h-2 rounded-full bg-white shrink-0" />}
                       {lang.label}
                     </button>
                   ))}
@@ -175,11 +183,15 @@ export default function Header() {
           </Link>
 
           {/* User / Profile */}
-          <div className="relative hidden md:block" onMouseLeave={() => setUserOpen(false)}>
+          <div
+            className="relative hidden md:block"
+            onMouseEnter={() => { if (userCloseTimer.current) clearTimeout(userCloseTimer.current); setUserOpen(true); }}
+            onMouseLeave={() => { userCloseTimer.current = setTimeout(() => setUserOpen(false), 300); }}
+          >
             {user ? (
               <>
                 <button
-                  onMouseEnter={() => setUserOpen(true)}
+                  onMouseEnter={() => { if (userCloseTimer.current) clearTimeout(userCloseTimer.current); }}
                   onClick={() => setUserOpen(v => !v)}
                   className="flex items-center gap-1.5 p-1 rounded-xl hover:bg-muted transition-all"
                   title={user.name}
@@ -196,7 +208,6 @@ export default function Header() {
                       transition={{ duration: 0.15 }}
                       className="absolute right-0 top-full mt-2 w-52 bg-white rounded-xl shadow-lg border border-border/30 overflow-hidden z-[100]"
                     >
-                      {/* User info header */}
                       <div className="px-4 py-3 border-b border-border/20 bg-muted/30">
                         <p className="font-semibold text-foreground text-sm truncate">{user.name}</p>
                         <p className="text-xs text-muted-foreground truncate">{user.email}</p>
@@ -224,7 +235,7 @@ export default function Header() {
                 to="/login"
                 className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-border/50 hover:border-primary/40 hover:bg-muted transition-all text-sm font-medium text-foreground"
               >
-                <User className="w-4 h-4" /> {t("login")}
+                <UserRound className="w-4 h-4" /> {t("login")}
               </Link>
             )}
           </div>
@@ -232,7 +243,7 @@ export default function Header() {
           {/* Order Now CTA */}
           <Link
             to="/products"
-            className="hidden lg:inline-flex gradient-cta text-primary-foreground px-5 py-2.5 rounded-full font-semibold text-sm hover:shadow-elevated transition-all hover:scale-105 btn-ripple"
+            className="hidden lg:inline-flex gradient-cta text-primary-foreground px-5 py-2.5 rounded-full font-semibold text-lg hover:shadow-elevated transition-all hover:scale-105 btn-ripple"
           >
             {t("orderNow")}
           </Link>
@@ -253,23 +264,19 @@ export default function Header() {
             className="lg:hidden border-t border-border bg-card overflow-hidden"
           >
             <nav className="container-nursery py-5 flex flex-col gap-1">
-
-              {/* Nav links */}
-              <Link to="/" className="py-3 px-4 rounded-xl font-medium hover:text-primary hover:bg-muted transition-all text-sm">{t("home")}</Link>
-              <Link to="/products" className="py-3 px-4 rounded-xl font-medium hover:text-primary hover:bg-muted transition-all text-sm">{t("products")}</Link>
+              <Link to="/" className="py-3 px-4 rounded-xl font-medium hover:text-primary hover:bg-muted transition-all text-base">{t("home")}</Link>
+              <Link to="/products" className="py-3 px-4 rounded-xl font-medium hover:text-primary hover:bg-muted transition-all text-base">{t("products")}</Link>
               {navLinks.slice(1).map(link => (
-                <Link key={link.to} to={link.to} className="py-3 px-4 rounded-xl font-medium hover:text-primary hover:bg-muted transition-all text-sm">
+                <Link key={link.to} to={link.to} className="py-3 px-4 rounded-xl font-medium hover:text-primary hover:bg-muted transition-all text-base">
                   {t(link.key)}
                 </Link>
               ))}
 
-              {/* Cart */}
               <Link to="/cart" className="py-3 px-4 rounded-xl font-medium hover:text-primary hover:bg-muted transition-all flex items-center justify-between text-sm">
                 {t("cart")}
                 {totalItems > 0 && <span className="text-xs bg-primary text-primary-foreground rounded-full px-2.5 py-0.5">{totalItems}</span>}
               </Link>
 
-              {/* User section */}
               {user ? (
                 <>
                   <div className="mx-4 my-1 border-t border-border/30" />
@@ -296,11 +303,10 @@ export default function Header() {
                 </>
               ) : (
                 <Link to="/login" className="py-3 px-4 rounded-xl font-medium hover:text-primary hover:bg-muted transition-all flex items-center gap-2 text-sm">
-                  <User className="w-4 h-4" /> {t("login")}
+                  <UserRound className="w-4 h-4" /> {t("login")}
                 </Link>
               )}
 
-              {/* Language switcher */}
               <div className="mx-4 my-1 border-t border-border/30" />
               <div className="px-4 py-2">
                 <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wider mb-2 flex items-center gap-1.5">
@@ -323,7 +329,6 @@ export default function Header() {
                 </div>
               </div>
 
-              {/* Order Now */}
               <Link
                 to="/products"
                 className="mx-4 mt-2 gradient-cta text-primary-foreground py-3 rounded-full font-semibold text-sm text-center hover:shadow-elevated transition-all"

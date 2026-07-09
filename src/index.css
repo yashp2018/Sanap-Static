@@ -1,4 +1,19 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Castoro&family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@400;500;600;700;800;900&display=swap');
+
+/* Override numeric glyphs globally with Castoro */
+@font-face {
+  font-family: 'Inter';
+  src: local('Castoro'), url('https://fonts.gstatic.com/s/castoro/v22/1q2GY5yMCld3-O4cHgKGHQ.woff2') format('woff2');
+  unicode-range: U+0030-0039; /* 0–9 */
+  font-weight: 100 900;
+}
+
+@font-face {
+  font-family: 'Playfair Display';
+  src: local('Castoro'), url('https://fonts.gstatic.com/s/castoro/v22/1q2GY5yMCld3-O4cHgKGHQ.woff2') format('woff2');
+  unicode-range: U+0030-0039;
+  font-weight: 100 900;
+}
 
 @tailwind base;
 @tailwind components;
@@ -96,9 +111,28 @@
     @apply border-border;
   }
 
+  /* Castoro for all numbers */
+  [data-number], .font-number,
+  .text-2xl, .text-3xl, .text-4xl, .text-5xl, .text-6xl, .text-7xl {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Apply Castoro to numeric characters globally */
+  @font-face {
+    font-family: 'Castoro';
+    font-style: normal;
+    font-weight: 400;
+  }
+
   body {
     @apply bg-background text-foreground;
     font-family: 'Inter', sans-serif;
+    font-feature-settings: "tnum";
+  }
+
+  /* Numbers use Castoro */
+  .stat-number, .price-number {
+    font-family: 'Castoro', serif;
   }
 
   h1, h2, h3, h4, h5, h6 {

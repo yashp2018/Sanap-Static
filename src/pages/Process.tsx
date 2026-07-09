@@ -41,7 +41,7 @@ export default function Process() {
               initial={{ opacity: 0, scale: 0.5 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.2 }}
-              className="inline-block bg-accent/20 text-accent border border-accent/30 rounded-full px-6 py-2 text-sm font-semibold mb-6"
+              className="inline-block bg-green-900 text-green-100 border border-green-700 rounded-full px-6 py-2 text-sm font-semibold mb-6"
             >
               Our Methodology
             </motion.span>

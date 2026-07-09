@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Award, Users, Leaf, MapPin, Phone, Mail, Target, Heart, TrendingUp, Globe2 } from "lucide-react";
+import { Award, Users, Leaf, MapPin, Eye, Target, Gem } from "lucide-react";
 import avinashImage from "@/assets/team/avinash-sanap.jpg";
 import sheetalImage from "@/assets/team/sheetal-sanap.jpeg";
 import ashutoshImage from "@/assets/team/ashutosh-sanap.jpg";
@@ -108,6 +108,87 @@ export default function About() {
                 </div>
               </div>
             </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* ===== VISION, MISSION & CORE VALUES ===== */}
+      <section className="py-20 bg-gradient-to-br from-secondary via-background to-secondary/40">
+        <div className="container-nursery">
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-14">
+            <span className="text-sm font-semibold text-primary uppercase tracking-[0.2em]">Our Foundation</span>
+            <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mt-3">Vision, Mission & Core Values</h2>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+
+            {/* Vision Card */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+              className="bg-card rounded-2xl border border-primary/20 overflow-hidden shadow-card hover-lift"
+            >
+              <div className="h-48 overflow-hidden">
+                <img src="https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=600&q=80" alt="Vision" className="w-full h-full object-cover" />
+              </div>
+              <div className="p-6">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <Eye className="w-4 h-4 text-primary" />
+                  </div>
+                  <h3 className="font-display text-xl font-bold text-foreground">Vision</h3>
+                </div>
+                <p className="text-sm leading-relaxed text-muted-foreground">
+                  To become India's leading nursery by producing strong, disease-resistant vegetable, fruit, and flower seedlings for sustainable farming — empowering farmers through modern technology, research, and a business-driven approach to make them capable, trained, and self-reliant.
+                </p>
+              </div>
+            </motion.div>
+
+            {/* Mission Card */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1 }}
+              className="bg-card rounded-2xl border border-primary/20 overflow-hidden shadow-card hover-lift"
+            >
+              <div className="h-48 overflow-hidden">
+                <img src="https://images.unsplash.com/photo-1500651230702-0e2d8a49d4ad?w=600&q=80" alt="Mission" className="w-full h-full object-cover" />
+              </div>
+              <div className="p-6">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <Target className="w-4 h-4 text-primary" />
+                  </div>
+                  <h3 className="font-display text-xl font-bold text-foreground">Mission</h3>
+                </div>
+                <p className="text-sm leading-relaxed text-muted-foreground">
+                  To positively impact the lives of at least 1,00,000 farmers by 2030 — by providing timely and reliable supply of strong seedlings; empowering them through modern technology, agricultural research, and guidance to become decision-makers and self-reliant.
+                </p>
+              </div>
+            </motion.div>
+
+            {/* Core Values Card */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.2 }}
+              className="bg-card rounded-2xl border border-primary/20 overflow-hidden shadow-card hover-lift"
+            >
+              <div className="h-48 overflow-hidden">
+                <img src="https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=600&q=80" alt="Core Values" className="w-full h-full object-cover" />
+              </div>
+              <div className="p-6">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <Gem className="w-4 h-4 text-primary" />
+                  </div>
+                  <h3 className="font-display text-xl font-bold text-foreground">Core Values</h3>
+                </div>
+                <div className="space-y-2 text-sm text-muted-foreground">
+                  <p><span className="font-semibold text-foreground">1. Trustworthiness —</span> Every plant is a symbol of honest service and farmer trust.</p>
+                  <p><span className="font-semibold text-foreground">2. Consistent Quality —</span> Excellence and consistency in every plant we produce.</p>
+                  <p><span className="font-semibold text-foreground">3. Integrity & Transparency —</span> Honest, clean, and fair dealings with all farmers.</p>
+                  <p><span className="font-semibold text-foreground">4. Human-Centric Relations —</span> Humanity first — we think of everyone's benefit.</p>
+                  <p><span className="font-semibold text-foreground">5. Community Growth —</span> We don't grow alone — we grow together with everyone.</p>
+                </div>
+              </div>
+            </motion.div>
+
           </div>
         </div>
       </section>

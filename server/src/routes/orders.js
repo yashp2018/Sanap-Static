@@ -2,17 +2,15 @@ const router          = require("express").Router();
 const pool            = require("../db");
 const { requireAuth } = require("../middleware/auth");
 
-// All order routes require login
 router.use(requireAuth);
 
-// ── Helper: generate order number ────────────────────────────
+// ── Helpers ───────────────────────────────────────────────────
 async function generateOrderNumber(client) {
   const { rows } = await client.query("SELECT COUNT(*) FROM orders");
   const next = parseInt(rows[0].count) + 1;
   return `SNH-${String(next).padStart(4, "0")}`;
 }
 
-// ── Helper: calculate price based on quantity ─────────────────
 function resolveUnitPrice(variety, quantity) {
   if (quantity >= 30000) return parseFloat(variety.price_30k);
   if (quantity >= 15000) return parseFloat(variety.price_15k);
@@ -31,15 +29,18 @@ router.post("/place", async (req, res) => {
     delivery_pincode,
     delivery_landmark,
     payment_method,
+    payment_type      = "advance",   // "advance" | "full"
     notes,
   } = req.body;
 
-  // Validation
   if (!customer_name || !customer_phone || !delivery_address || !delivery_city || !delivery_pincode || !payment_method)
     return res.status(400).json({ success: false, message: "Name, phone, address, city, pincode and payment method are required" });
 
   if (!["razorpay", "cod", "bank"].includes(payment_method))
     return res.status(400).json({ success: false, message: "payment_method must be razorpay, cod or bank" });
+
+  if (!["advance", "full"].includes(payment_type))
+    return res.status(400).json({ success: false, message: "payment_type must be advance or full" });
 
   if (!/^\d{6}$/.test(delivery_pincode))
     return res.status(400).json({ success: false, message: "Enter a valid 6-digit pincode" });
@@ -74,7 +75,7 @@ router.post("/place", async (req, res) => {
       return res.status(400).json({ success: false, message: "Cart is empty" });
     }
 
-    // 2. Validate stock for each item
+    // 2. Validate stock
     for (const item of cartItems) {
       if (item.quantity > item.stock) {
         await client.query("ROLLBACK");
@@ -90,12 +91,12 @@ router.post("/place", async (req, res) => {
     let totalPlants = 0;
 
     const lineItems = cartItems.map((item) => {
-      const unitPrice      = resolveUnitPrice(item, item.quantity);
-      const delivCharge    = item.delivery_type === "local"
+      const unitPrice     = resolveUnitPrice(item, item.quantity);
+      const delivCharge   = item.delivery_type === "local"
         ? parseFloat(item.delivery_local_charge)
         : parseFloat(item.delivery_250km_charge);
-      const deliveryTotal  = delivCharge * item.quantity;
-      const lineTotal      = (unitPrice * item.quantity) + deliveryTotal;
+      const deliveryTotal = delivCharge * item.quantity;
+      const lineTotal     = (unitPrice * item.quantity) + deliveryTotal;
 
       totalAmount += lineTotal;
       totalPlants += item.quantity;
@@ -113,7 +114,20 @@ router.post("/place", async (req, res) => {
       };
     });
 
-    // 4. Create order
+    // 4. Payment calculations — 25% advance / 75% remaining
+    const ADVANCE_PCT    = 25;
+    const advanceAmount  = parseFloat((totalAmount * ADVANCE_PCT / 100).toFixed(2));
+    const remainingAmount = parseFloat((totalAmount - advanceAmount).toFixed(2));
+
+    // Determine initial payment_status
+    // COD / bank orders start as "pending" until payment confirmed externally
+    // For now all orders start as "pending" — admin marks them paid
+    const initialPaymentStatus = "pending";
+
+    // Order status: confirmed once advance is committed
+    const initialOrderStatus = "pending";
+
+    // 5. Create order
     const orderNumber = await generateOrderNumber(client);
 
     const { rows: orderRows } = await client.query(
@@ -122,21 +136,27 @@ router.post("/place", async (req, res) => {
          customer_name, customer_phone, customer_email,
          delivery_address, delivery_city, delivery_state,
          delivery_pincode, delivery_landmark,
-         payment_method, total_amount, total_plants, notes
-       ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
+         payment_method, payment_type,
+         advance_percentage, advance_amount, remaining_amount,
+         payment_status, order_status,
+         total_amount, total_plants, notes
+       ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)
        RETURNING *`,
       [
         orderNumber, req.session.userId,
         customer_name.trim(), customer_phone.trim(), customer_email || null,
         delivery_address.trim(), delivery_city.trim(), delivery_state.trim(),
         delivery_pincode.trim(), delivery_landmark || null,
-        payment_method, totalAmount.toFixed(2), totalPlants, notes || null,
+        payment_method, payment_type,
+        ADVANCE_PCT, advanceAmount, remainingAmount,
+        initialPaymentStatus, initialOrderStatus,
+        totalAmount.toFixed(2), totalPlants, notes || null,
       ]
     );
 
     const order = orderRows[0];
 
-    // 5. Insert order items
+    // 6. Insert order items
     for (const item of lineItems) {
       await client.query(
         `INSERT INTO order_items
@@ -150,7 +170,7 @@ router.post("/place", async (req, res) => {
       );
     }
 
-    // 6. Deduct stock
+    // 7. Deduct stock
     for (const item of cartItems) {
       await client.query(
         "UPDATE varieties SET stock = stock - $1 WHERE id = $2",
@@ -158,7 +178,7 @@ router.post("/place", async (req, res) => {
       );
     }
 
-    // 7. Clear cart
+    // 8. Clear cart
     await client.query("DELETE FROM cart_items WHERE user_id = $1", [req.session.userId]);
 
     await client.query("COMMIT");
@@ -167,13 +187,18 @@ router.post("/place", async (req, res) => {
       success: true,
       message: "Order placed successfully",
       data: {
-        order_number: order.order_number,
-        order_id:     order.id,
-        total_amount: order.total_amount,
-        total_plants: order.total_plants,
-        order_status: order.order_status,
-        payment_method: order.payment_method,
-        items: lineItems,
+        order_number:       order.order_number,
+        order_id:           order.id,
+        total_amount:       order.total_amount,
+        advance_amount:     order.advance_amount,
+        remaining_amount:   order.remaining_amount,
+        advance_percentage: order.advance_percentage,
+        payment_type:       order.payment_type,
+        total_plants:       order.total_plants,
+        order_status:       order.order_status,
+        payment_status:     order.payment_status,
+        payment_method:     order.payment_method,
+        items:              lineItems,
       },
     });
   } catch (err) {
@@ -191,7 +216,9 @@ router.get("/", async (req, res) => {
     const { rows } = await pool.query(
       `SELECT
          o.id, o.order_number, o.order_status, o.payment_method,
-         o.payment_status, o.total_amount, o.total_plants,
+         o.payment_status, o.payment_type,
+         o.advance_percentage, o.advance_amount, o.remaining_amount,
+         o.total_amount, o.total_plants,
          o.delivery_city, o.delivery_state, o.created_at,
          json_agg(json_build_object(
            'variety_name',  oi.variety_name,
@@ -228,7 +255,6 @@ router.get("/:orderNumber", async (req, res) => {
       return res.status(404).json({ success: false, message: "Order not found" });
 
     const order = orderRows[0];
-
     const { rows: items } = await pool.query(
       "SELECT * FROM order_items WHERE order_id = $1 ORDER BY id",
       [order.id]
@@ -238,6 +264,26 @@ router.get("/:orderNumber", async (req, res) => {
   } catch (err) {
     console.error("get order detail error:", err.message);
     return res.status(500).json({ success: false, message: "Failed to fetch order" });
+  }
+});
+
+// ── PATCH /api/orders/:orderNumber/cancel ─────────────────────
+router.patch("/:orderNumber/cancel", async (req, res) => {
+  try {
+    const { reason } = req.body;
+    const { rows, rowCount } = await pool.query(
+      `UPDATE orders SET order_status = 'cancelled', payment_status = 'cancelled'
+       WHERE order_number = $1 AND user_id = $2
+         AND order_status IN ('pending','confirmed')
+       RETURNING id, order_number, order_status`,
+      [req.params.orderNumber, req.session.userId]
+    );
+    if (rowCount === 0)
+      return res.status(404).json({ success: false, message: "Order not found or cannot be cancelled" });
+    return res.json({ success: true, message: "Order cancelled", data: rows[0] });
+  } catch (err) {
+    console.error("cancel order error:", err.message);
+    return res.status(500).json({ success: false, message: "Failed to cancel order" });
   }
 });
 

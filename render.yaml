@@ -15,7 +15,7 @@ services:
       - key: SESSION_SECRET
         generateValue: true
       - key: FRONTEND_ORIGIN
-        value: https://sanap-nursery.onrender.com  # update after deploy
+        value: https://sanap-nursery.onrender.com
 
 databases:
   - name: sanap-nursery-db

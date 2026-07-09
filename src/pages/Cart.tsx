@@ -5,6 +5,44 @@ import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import { ApiCartItem, resolvePrice, resolveDelivery } from "@/services/api";
 import { toast } from "sonner";
+import tomatoAryaman from "@/assets/vegetables/Aryaman.png";
+import chilliImg from "@/assets/vegetables/Chilli.png";
+import brinjalImg from "@/assets/vegetables/Brinjal.png";
+import capsicumImg from "@/assets/vegetables/Capsicum.png";
+import cucumberImg from "@/assets/vegetables/cucumber.png";
+import cabbageImg from "@/assets/vegetables/Cabbage.png";
+import cauliflowerImg from "@/assets/vegetables/Cauliflower.png";
+import bitterGourdImg from "@/assets/vegetables/bitter Gourd.png";
+import watermelonImg from "@/assets/vegetables/Watermelon.png";
+import sugarQueenImg from "@/assets/vegetables/Suger Queen.png";
+import maxImg from "@/assets/vegetables/Max.png";
+import papayaImg from "@/assets/vegetables/Papaya.png";
+import edenOrangeImg from "@/assets/vegetables/Eden Orange.png";
+import freshOrangeImg from "@/assets/vegetables/Fresh Orange.png";
+
+function getCartItemImage(item: ApiCartItem): string {
+  if (item.image_url) return item.image_url;
+  const slug = (item as any).variety_slug || "";
+  switch ((item as any).crop_slug) {
+    case "tomato":      return tomatoAryaman;
+    case "chili":       return chilliImg;
+    case "brinjal":     return brinjalImg;
+    case "capsicum":    return capsicumImg;
+    case "cucumber":    return cucumberImg;
+    case "cabbage":     return cabbageImg;
+    case "cauliflower": return cauliflowerImg;
+    case "bittergourd": return bitterGourdImg;
+    case "papaya":      return papayaImg;
+    case "watermelon":
+      if (slug === "wm-sugarqueen") return sugarQueenImg;
+      if (slug === "wm-max")        return maxImg;
+      return watermelonImg;
+    case "marigold":
+      if (slug === "mar-freshorange") return freshOrangeImg;
+      return edenOrangeImg;
+    default:            return tomatoAryaman;
+  }
+}
 
 function itemTotal(item: ApiCartItem): number {
   const price = resolvePrice(item as any, item.quantity);
@@ -74,9 +112,9 @@ export default function Cart() {
                   className="bg-card rounded-xl border border-border p-5 flex flex-col sm:flex-row gap-5"
                 >
                   <img
-                    src={item.image_url || "/SA.png"}
+                    src={getCartItemImage(item)}
                     alt={item.variety_name}
-                    className="w-full sm:w-24 h-24 object-cover rounded-lg"
+                    className="w-full sm:w-24 h-24 object-cover object-top rounded-lg"
                   />
                   <div className="flex-1">
                     <div className="flex justify-between">

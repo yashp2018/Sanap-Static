@@ -91,7 +91,9 @@ router.get("/orders", async (req, res) => {
     const { rows } = await pool.query(
       `SELECT
          o.id, o.order_number, o.order_status, o.payment_method,
-         o.payment_status, o.total_amount, o.total_plants,
+         o.payment_status, o.payment_type,
+         o.advance_percentage, o.advance_amount, o.remaining_amount,
+         o.total_amount, o.total_plants,
          o.customer_name, o.customer_phone, o.customer_email,
          o.delivery_city, o.delivery_state, o.delivery_pincode,
          o.created_at, o.updated_at,
@@ -155,16 +157,28 @@ router.patch("/orders/:id/status", async (req, res) => {
 });
 
 // ── PATCH /api/admin/orders/:id/payment ───────────────────────
+// Marks advance paid → order confirmed, or marks remaining paid → fully paid
 router.patch("/orders/:id/payment", async (req, res) => {
   try {
     const { payment_status } = req.body;
-    const valid = ["pending", "paid", "failed", "refunded"];
+    const valid = ["pending", "advance_paid", "fully_paid", "partially_paid", "cancelled", "refunded"];
 
     if (!valid.includes(payment_status))
       return res.status(400).json({ success: false, message: `payment_status must be one of: ${valid.join(", ")}` });
 
+    // When advance is paid → auto-confirm the order
+    // When fully paid → keep/set order as confirmed (or delivered if already shipped)
+    let orderStatusUpdate = "";
+    if (payment_status === "advance_paid") {
+      orderStatusUpdate = `, order_status = CASE WHEN order_status = 'pending' THEN 'confirmed' ELSE order_status END`;
+    } else if (payment_status === "fully_paid") {
+      orderStatusUpdate = `, order_status = CASE WHEN order_status = 'pending' THEN 'confirmed' ELSE order_status END`;
+    }
+
     const { rows, rowCount } = await pool.query(
-      `UPDATE orders SET payment_status = $1 WHERE id = $2 RETURNING id, order_number, payment_status`,
+      `UPDATE orders SET payment_status = $1${orderStatusUpdate}
+       WHERE id = $2
+       RETURNING id, order_number, payment_status, order_status, advance_amount, remaining_amount, total_amount`,
       [payment_status, req.params.id]
     );
 

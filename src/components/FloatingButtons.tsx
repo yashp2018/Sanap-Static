@@ -1,5 +1,6 @@
-import { MessageCircle, ArrowUp } from "lucide-react";
+import { ArrowUp } from "lucide-react";
 import { useEffect, useState } from "react";
+import whatsappIcon from "@/assets/WhatsApp.svg.webp";
 
 export default function FloatingButtons() {
   const [showScroll, setShowScroll] = useState(false);
@@ -26,10 +27,10 @@ export default function FloatingButtons() {
         href="https://wa.me/917447770803?text=Hi%2C%20I%20want%20to%20enquire%20about%20plants"
         target="_blank"
         rel="noopener noreferrer"
-        className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-[hsl(142,70%,45%)] text-primary-foreground flex items-center justify-center shadow-elevated hover:scale-110 transition-transform"
+        className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full flex items-center justify-center shadow-elevated hover:scale-110 transition-transform"
         aria-label="Chat on WhatsApp"
       >
-        <MessageCircle className="w-6 h-6" />
+        <img src={whatsappIcon} alt="WhatsApp" className="w-14 h-14" />
       </a>
 
       {/* Scroll to Top */}

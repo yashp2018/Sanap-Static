@@ -2,12 +2,25 @@ import { Link } from "react-router-dom";
 import { ShoppingCart, Clock, Building2, PackageCheck, PackageX } from "lucide-react";
 import { Variety } from "@/data/products";
 import SeasonAvailability from "@/components/SeasonAvailability";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface ProductCardProps {
   variety: Variety;
 }
 
 export default function ProductCard({ variety }: ProductCardProps) {
+  const { t } = useLanguage();
+
+  const cropNameMap: Record<string, string> = {
+    tomato: t("cropTomato"), chili: t("cropChili"), brinjal: t("cropBrinjal"),
+    capsicum: t("cropCapsicum"), cucumber: t("cropCucumber"), cabbage: t("cropCabbage"),
+    cauliflower: t("cropCauliflower"), bittergourd: t("cropBitterGourd"),
+    bottlegourd: t("cropBottleGourd"), watermelon: t("cropWatermelon"),
+    muskmelon: t("cropMuskmelon"), papaya: t("cropPapaya"),
+    marigold: t("cropMarigold"), sugarcane: t("cropSugarcane"), drumstick: t("cropDrumstick"),
+  };
+
+  const translatedCropName = cropNameMap[variety.cropId] || variety.cropName;
   return (
     <Link
       to={`/product/${variety.slug || variety.id}`}
@@ -20,12 +33,12 @@ export default function ProductCard({ variety }: ProductCardProps) {
         <img
           src={variety.image}
           alt={`${variety.name} ${variety.cropName} seedlings`}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
           loading="lazy"
         />
         {/* Crop badge — top left */}
         <span className="absolute top-3 left-3 text-xs font-bold bg-primary text-primary-foreground px-3 py-1.5 rounded-full shadow-card">
-          {variety.cropName}
+          {translatedCropName}
         </span>
         {/* Stock badge — top right */}
         <span className={`absolute top-3 right-3 text-xs font-semibold px-3 py-1.5 rounded-full flex items-center gap-1 ${
@@ -34,8 +47,8 @@ export default function ProductCard({ variety }: ProductCardProps) {
             : "bg-destructive text-destructive-foreground"
         }`}>
           {variety.stock > 0
-            ? <><PackageCheck className="w-3 h-3" /> In Stock</>
-            : <><PackageX className="w-3 h-3" /> Out of Stock</>}
+            ? <><PackageCheck className="w-3 h-3" /> {t("inStock")}</>
+            : <><PackageX className="w-3 h-3" /> {t("outOfStock")}</>}
         </span>
       </div>
 
@@ -57,7 +70,7 @@ export default function ProductCard({ variety }: ProductCardProps) {
 
         {/* Min Order */}
         <p className="text-xs text-muted-foreground mb-3">
-          Min order: {variety.minOrderQty.toLocaleString()} plants
+          {t("minOrder")}: {variety.minOrderQty.toLocaleString()} {t("plants")}
         </p>
 
         {/* Season Availability — always shown, fallback to all months if not set */}
@@ -75,7 +88,7 @@ export default function ProductCard({ variety }: ProductCardProps) {
         <div className="flex items-end justify-between border-t border-border/50 pt-3">
           <div>
             <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-0.5">
-              FROM (15K+ RATE)
+              {t("fromRate")}
             </p>
             <p className="text-2xl font-bold text-primary font-sans leading-none">
               ₹{Number(variety.price15k).toFixed(1)}

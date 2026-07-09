@@ -9,6 +9,44 @@ import { toast } from "sonner";
 import SeasonAvailability from "@/components/SeasonAvailability";
 import PlantReadinessTracker from "@/components/PlantReadinessTracker";
 import BulkQuoteForm from "@/components/BulkQuoteForm";
+import { useLanguage } from "@/context/LanguageContext";
+import tomatoAryaman from "@/assets/vegetables/Aryaman.png";
+import chilliImg from "@/assets/vegetables/Chilli.png";
+import brinjalImg from "@/assets/vegetables/Brinjal.png";
+import capsicumImg from "@/assets/vegetables/Capsicum.png";
+import cucumberImg from "@/assets/vegetables/cucumber.png";
+import cabbageImg from "@/assets/vegetables/Cabbage.png";
+import cauliflowerImg from "@/assets/vegetables/Cauliflower.png";
+import bitterGourdImg from "@/assets/vegetables/bitter Gourd.png";
+import watermelonImg from "@/assets/vegetables/Watermelon.png";
+import sugarQueenImg from "@/assets/vegetables/Suger Queen.png";
+import maxImg from "@/assets/vegetables/Max.png";
+import papayaImg from "@/assets/vegetables/Papaya.png";
+import edenOrangeImg from "@/assets/vegetables/Eden Orange.png";
+import freshOrangeImg from "@/assets/vegetables/Fresh Orange.png";
+
+function getCropImage(variety: ApiVariety): string {
+  if (variety.image_url) return variety.image_url;
+  switch (variety.crop_slug) {
+    case "tomato":      return tomatoAryaman;
+    case "chili":       return chilliImg;
+    case "brinjal":     return brinjalImg;
+    case "capsicum":    return capsicumImg;
+    case "cucumber":    return cucumberImg;
+    case "cabbage":     return cabbageImg;
+    case "cauliflower": return cauliflowerImg;
+    case "bittergourd": return bitterGourdImg;
+    case "papaya":      return papayaImg;
+    case "watermelon":
+      if (variety.slug === "wm-sugarqueen") return sugarQueenImg;
+      if (variety.slug === "wm-max")        return maxImg;
+      return watermelonImg;
+    case "marigold":
+      if (variety.slug === "mar-freshorange") return freshOrangeImg;
+      return edenOrangeImg;
+    default:            return tomatoAryaman;
+  }
+}
 
 const BULK_THRESHOLD = 50000;
 
@@ -17,6 +55,7 @@ export default function ProductDetail() {
   const navigate = useNavigate();
   const { addItem } = useCart();
   const { user } = useAuth();
+  const { t } = useLanguage();
 
   const [variety, setVariety] = useState<ApiVariety | null>(null);
   const [loading, setLoading] = useState(true);
@@ -118,7 +157,7 @@ export default function ProductDetail() {
       <section className="gradient-hero text-primary-foreground py-6">
         <div className="container-nursery">
           <Link to="/products" className="inline-flex items-center gap-2 text-primary-foreground/70 hover:text-primary-foreground mb-3 text-sm">
-            <ArrowLeft className="w-4 h-4" /> Back to Catalog
+            <ArrowLeft className="w-4 h-4" /> {t("backToCatalog")}
           </Link>
           <div className="flex items-center gap-4">
             <div>
@@ -126,7 +165,7 @@ export default function ProductDetail() {
               <h1 className="font-display text-3xl md:text-5xl font-bold">{variety.name}</h1>
             </div>
             <div className="ml-auto hidden md:flex items-center gap-3 bg-primary-foreground/10 backdrop-blur-sm rounded-xl px-5 py-3 border border-primary-foreground/20">
-              <span className="text-primary-foreground/70 text-sm">by</span>
+              <span className="text-primary-foreground/70 text-sm">{t("by")}</span>
               <span className="font-display text-xl font-bold text-primary-foreground">{variety.company}</span>
             </div>
           </div>
@@ -140,7 +179,7 @@ export default function ProductDetail() {
           <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
             <div className="rounded-2xl overflow-hidden shadow-elevated mb-6">
               <img
-                src={variety.image_url || "/SA.png"}
+                src={getCropImage(variety)}
                 alt={`${variety.name} ${variety.crop_name}`}
                 className="w-full h-80 lg:h-[460px] object-cover"
               />
@@ -174,7 +213,7 @@ export default function ProductDetail() {
                     <div className="w-9 h-9 rounded-xl gradient-cta flex items-center justify-center">
                       <Leaf className="w-4 h-4 text-primary-foreground" />
                     </div>
-                    <h3 className="font-display font-bold text-foreground">Features</h3>
+                    <h3 className="font-display font-bold text-foreground">{t("features")}</h3>
                   </div>
                   <ul className="space-y-2">
                     {variety.features.map((f, i) => (
@@ -193,7 +232,7 @@ export default function ProductDetail() {
                     <div className="w-9 h-9 rounded-xl gradient-gold flex items-center justify-center">
                       <Lightbulb className="w-4 h-4 text-accent-foreground" />
                     </div>
-                    <h3 className="font-display font-bold text-foreground">Advantages</h3>
+                    <h3 className="font-display font-bold text-foreground">{t("advantages")}</h3>
                   </div>
                   <ul className="space-y-2">
                     {variety.advantages.map((a, i) => (
@@ -212,7 +251,7 @@ export default function ProductDetail() {
                     <div className="w-9 h-9 rounded-xl bg-secondary flex items-center justify-center">
                       <FlaskConical className="w-4 h-4 text-secondary-foreground" />
                     </div>
-                    <h3 className="font-display font-bold text-foreground">Agronomic Tips</h3>
+                    <h3 className="font-display font-bold text-foreground">{t("agronomicTips")}</h3>
                   </div>
                   <ul className="space-y-2">
                     {variety.agronomic_tips.map((t, i) => (
@@ -233,7 +272,7 @@ export default function ProductDetail() {
                   <div className="w-9 h-9 rounded-xl gradient-cta flex items-center justify-center">
                     <BarChart3 className="w-4 h-4 text-primary-foreground" />
                   </div>
-                  <h3 className="font-display text-lg font-bold text-foreground">Characteristics</h3>
+                  <h3 className="font-display text-lg font-bold text-foreground">{t("characteristics")}</h3>
                 </div>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                   {Object.entries(characteristics)
@@ -263,31 +302,31 @@ export default function ProductDetail() {
               <div className="grid grid-cols-3 gap-4">
                 <div className="bg-muted rounded-xl p-4 text-center">
                   <Clock className="w-5 h-5 text-primary mx-auto mb-1" />
-                  <p className="text-sm font-semibold text-foreground">{variety.duration_days} Days</p>
-                  <p className="text-xs text-muted-foreground">Ready</p>
+                  <p className="text-sm font-semibold text-foreground">{variety.duration_days} {t("days")}</p>
+                  <p className="text-xs text-muted-foreground">{t("ready")}</p>
                 </div>
                 <div className="bg-muted rounded-xl p-4 text-center">
                   <Package className="w-5 h-5 text-primary mx-auto mb-1" />
                   <p className="text-sm font-semibold text-foreground">
                     {variety.stock >= 1000 ? `${(variety.stock / 1000).toFixed(0)}K` : variety.stock}
                   </p>
-                  <p className="text-xs text-muted-foreground">In Stock</p>
+                  <p className="text-xs text-muted-foreground">{t("inStock")}</p>
                 </div>
                 <div className="bg-muted rounded-xl p-4 text-center">
                   <Truck className="w-5 h-5 text-primary mx-auto mb-1" />
                   <p className="text-sm font-semibold text-foreground">{minQty.toLocaleString()}</p>
-                  <p className="text-xs text-muted-foreground">Min Order</p>
+                  <p className="text-xs text-muted-foreground">{t("minOrderQty")}</p>
                 </div>
               </div>
 
               {/* Pricing Table */}
               <div className="bg-muted rounded-xl p-5">
-                <h3 className="font-display font-semibold text-foreground mb-3">Bulk Pricing (per plant)</h3>
+                <h3 className="font-display font-semibold text-foreground mb-3">{t("bulkPricing")}</h3>
                 <div className="grid grid-cols-3 gap-3 text-center text-sm">
                   {[
-                    { label: "Ex-Factory", price: variety.price_ex_factory, active: priceTier === "Ex-Factory" },
-                    { label: "15K+ Rate",  price: variety.price_15k,        active: priceTier === "15K+ Rate" },
-                    { label: "30K+ Rate",  price: variety.price_30k,        active: priceTier === "30K+ Rate" },
+                    { label: t("exFactory"), price: variety.price_ex_factory, active: priceTier === "Ex-Factory" },
+                    { label: t("rate15k"),   price: variety.price_15k,        active: priceTier === "15K+ Rate" },
+                    { label: t("rate30k"),   price: variety.price_30k,        active: priceTier === "30K+ Rate" },
                   ].map((p) => (
                     <div
                       key={p.label}
@@ -303,7 +342,7 @@ export default function ProductDetail() {
               {/* Quantity & Delivery */}
               <div className="space-y-4">
                 <div>
-                  <label className="text-sm font-semibold text-foreground mb-2 block">Quantity (plants)</label>
+                  <label className="text-sm font-semibold text-foreground mb-2 block">{t("quantity")}</label>
                   <input
                     type="number"
                     value={quantity}
@@ -314,11 +353,11 @@ export default function ProductDetail() {
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-semibold text-foreground mb-2 block">Delivery</label>
+                  <label className="text-sm font-semibold text-foreground mb-2 block">{t("delivery")}</label>
                   <div className="grid grid-cols-2 gap-3">
                     {[
-                      { type: "local" as const, label: "Local Delivery",   charge: variety.delivery_local_charge },
-                      { type: "250km" as const, label: "250+ km Delivery", charge: variety.delivery_250km_charge },
+                      { type: "local" as const, label: t("localDelivery"),   charge: variety.delivery_local_charge },
+                      { type: "250km" as const, label: t("delivery250km"), charge: variety.delivery_250km_charge },
                     ].map((d) => (
                       <button
                         key={d.type}
@@ -340,7 +379,7 @@ export default function ProductDetail() {
               {/* Total */}
               <div className="bg-card border border-border rounded-xl p-5">
                 <div className="flex justify-between text-sm mb-2">
-                  <span className="text-muted-foreground">Unit Price ({priceTier})</span>
+                  <span className="text-muted-foreground">{t("unitPrice")} ({priceTier})</span>
                   <span className="text-foreground font-semibold">₹{unitPrice.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-sm mb-2">
@@ -348,11 +387,11 @@ export default function ProductDetail() {
                   <span className="text-foreground font-semibold">₹{(unitPrice * quantity).toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between text-sm mb-3">
-                  <span className="text-muted-foreground">Delivery</span>
+                  <span className="text-muted-foreground">{t("delivery")}</span>
                   <span className="text-foreground font-semibold">₹{deliveryCharge.toLocaleString()}</span>
                 </div>
                 <div className="border-t border-border pt-3 flex justify-between">
-                  <span className="font-display font-bold text-foreground">Total</span>
+                  <span className="font-display font-bold text-foreground">{t("total")}</span>
                   <span className="font-display text-2xl font-bold text-primary">₹{total.toLocaleString()}</span>
                 </div>
               </div>
@@ -360,22 +399,22 @@ export default function ProductDetail() {
               {/* Add to Cart — shows login prompt if not logged in */}
               {!user ? (
                 <div className="bg-primary/5 border-2 border-primary/20 rounded-xl p-4 text-center">
-                  <p className="text-sm font-semibold text-foreground mb-1">🔒 Login Required to Order</p>
-                  <p className="text-xs text-muted-foreground mb-3">Create a free account to place bulk orders</p>
+                  <p className="text-sm font-semibold text-foreground mb-1">🔒 {t("loginRequired")}</p>
+                  <p className="text-xs text-muted-foreground mb-3">{t("createAccount")}</p>
                   <div className="flex gap-2">
                     <Link
                       to="/login"
                       onClick={() => sessionStorage.setItem("returnTo", window.location.pathname)}
                       className="flex-1 gradient-cta text-primary-foreground py-2.5 rounded-xl font-semibold text-sm text-center hover:shadow-elevated transition-all"
                     >
-                      Login
+                      {t("login")}
                     </Link>
                     <Link
                       to="/register"
                       onClick={() => sessionStorage.setItem("returnTo", window.location.pathname)}
                       className="flex-1 border-2 border-primary text-primary py-2.5 rounded-xl font-semibold text-sm text-center hover:bg-primary/5 transition-all"
                     >
-                      Register Free
+                      {t("registerFree")}
                     </Link>
                   </div>
                 </div>
@@ -386,7 +425,7 @@ export default function ProductDetail() {
                   className="w-full gradient-cta text-primary-foreground py-4 rounded-xl font-semibold text-lg hover:shadow-elevated transition-all hover:scale-[1.02] flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100"
                 >
                   <ShoppingCart className="w-5 h-5" />
-                  {variety.stock === 0 ? "Out of Stock" : adding ? "Adding..." : "Add to Cart"}
+                  {variety.stock === 0 ? t("outOfStock") : adding ? t("adding") : t("addToCart")}
                 </button>
               )}
 
@@ -395,7 +434,7 @@ export default function ProductDetail() {
                 onClick={handleWhatsAppEnquiry}
                 className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-[#25D366] text-[#25D366] font-semibold text-sm hover:bg-[#25D366]/5 transition-all"
               >
-                <MessageCircle className="w-4 h-4" /> Enquire on WhatsApp
+                <MessageCircle className="w-4 h-4" /> {t("enquireWhatsapp")}
               </button>
 
               {/* Bulk Quote CTA */}

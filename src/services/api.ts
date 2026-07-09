@@ -92,6 +92,10 @@ export interface ApiOrder {
   order_status: string;
   payment_method: string;
   payment_status: string;
+  payment_type: "advance" | "full";
+  advance_percentage: number;
+  advance_amount: number;
+  remaining_amount: number;
   total_amount: number;
   total_plants: number;
   delivery_city: string;
@@ -172,9 +176,20 @@ export const placeOrder = (data: {
   delivery_pincode: string;
   delivery_landmark?: string;
   payment_method: "razorpay" | "cod" | "bank";
+  payment_type: "advance" | "full";
   notes?: string;
 }) =>
-  api<{ success: true; data: { order_number: string; total_amount: number; total_plants: number; order_status: string } }>(
+  api<{ success: true; data: {
+    order_number: string;
+    total_amount: number;
+    advance_amount: number;
+    remaining_amount: number;
+    advance_percentage: number;
+    payment_type: string;
+    total_plants: number;
+    order_status: string;
+    payment_status: string;
+  } }>(
     "/orders/place",
     { method: "POST", body: JSON.stringify(data) }
   );

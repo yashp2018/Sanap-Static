@@ -12,6 +12,7 @@ interface AuthContextType {
   user: AuthUser | null;
   loading: boolean;
   login: (emailOrPhone: string, password: string) => Promise<void>;
+  adminLoginByEmail: (email: string) => Promise<void>;
   register: (data: RegisterData) => Promise<void>;
   logout: () => Promise<void>;
   isAdmin: boolean;
@@ -60,6 +61,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(data.user);
   }, []);
 
+  const adminLoginByEmail = useCallback(async (email: string) => {
+    const data = await apiFetch("/admin-login", { email });
+    if (!data?.user || data.user.role !== "admin") throw new Error("No admin account found for this email.");
+    setUser(data.user);
+  }, []);
+
   const register = useCallback(async (formData: RegisterData) => {
     const data = await apiFetch("/register", formData);
     setUser(data.user);
@@ -75,6 +82,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       user,
       loading,
       login,
+      adminLoginByEmail,
       register,
       logout,
       isAdmin: user?.role === "admin",
