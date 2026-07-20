@@ -407,7 +407,7 @@ export default function ProductDetail() {
                       onClick={() => sessionStorage.setItem("returnTo", window.location.pathname)}
                       className="flex-1 gradient-cta text-primary-foreground py-2.5 rounded-xl font-semibold text-sm text-center hover:shadow-elevated transition-all"
                     >
-                      {t("login")}
+                      {t("loginBtn")}
                     </Link>
                     <Link
                       to="/register"
