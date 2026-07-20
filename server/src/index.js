@@ -30,7 +30,7 @@ app.get("/api/health", async (_req, res) => {
 });
 
 // ── Routes ────────────────────────────────────────────────────
-app.use("/api/auth",       require("./routes/auth/me"));
+app.use("/api/auth",       require("./routes/auth"));
 app.use("/api",            require("./routes/catalog"));
 app.use("/api/cart",       require("./routes/cart"));
 app.use("/api/orders",     require("./routes/orders"));
