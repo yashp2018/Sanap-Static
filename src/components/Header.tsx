@@ -1,12 +1,47 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { ShoppingCart, Menu, X, UserRound, ChevronDown, Globe, LogOut, LayoutDashboard, Sprout, ArrowRight, Settings } from "lucide-react";
+import { Icon } from "@iconify/react";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
 import { categories } from "@/data/products";
 import { motion, AnimatePresence } from "framer-motion";
 import logo from "@/assets/S-LOGO.png";
+
+const CAT_CONFIG: Record<string, { icon: string; gradient: string; lightBg: string; textColor: string }> = {
+  vegetables: {
+    icon: "mdi:carrot",
+    gradient: "from-green-500 to-emerald-600",
+    lightBg: "bg-green-50",
+    textColor: "text-green-700",
+  },
+  fruits: {
+    icon: "mdi:fruit-watermelon",
+    gradient: "from-orange-400 to-yellow-500",
+    lightBg: "bg-orange-50",
+    textColor: "text-orange-700",
+  },
+  flowers: {
+    icon: "mdi:flower",
+    gradient: "from-pink-500 to-purple-500",
+    lightBg: "bg-pink-50",
+    textColor: "text-pink-700",
+  },
+  "other-plants": {
+    icon: "mdi:tree",
+    gradient: "from-emerald-600 to-green-800",
+    lightBg: "bg-emerald-50",
+    textColor: "text-emerald-700",
+  },
+};
+
+const CROP_EMOJI: Record<string, string> = {
+  tomato: "🍅", chili: "🌶️", brinjal: "🍆", capsicum: "🫑",
+  cucumber: "🥒", watermelon: "🍉", cabbage: "🥬", cauliflower: "🥦",
+  bittergourd: "🌿", bottlegourd: "🌿", papaya: "🍈", muskmelon: "🍈",
+  marigold: "🌸",
+};
 
 const LANGS = [
   { code: "en" as const, label: "English", short: "EN" },
@@ -93,26 +128,73 @@ export default function Header() {
             <AnimatePresence>
               {productsOpen && (
                 <motion.div
-                  initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 8 }}
-                  transition={{ duration: 0.15 }}
-                  className="absolute top-full left-0 mt-2 w-52 bg-white/95 backdrop-blur-md rounded-xl shadow-2xl border border-border/30 overflow-hidden"
+                  initial={{ opacity: 0, y: 10, scale: 0.97 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 10, scale: 0.97 }}
+                  transition={{ duration: 0.18, ease: "easeOut" }}
+                  className="absolute top-full left-1/2 -translate-x-1/2 mt-3 w-[520px] bg-white/98 backdrop-blur-xl rounded-2xl shadow-2xl border border-border/20 overflow-hidden z-[200]"
                 >
-                  {categories.filter(c => c.crops.length > 0).map((cat, idx) => (
+                  {/* Header strip */}
+                  <div className="px-5 py-3 bg-gradient-to-r from-green-50 to-emerald-50 border-b border-border/20 flex items-center justify-between">
+                    <span className="text-xs font-bold text-primary uppercase tracking-widest">Explore Categories</span>
+                    <span className="text-xs text-muted-foreground">{categories.reduce((s, c) => s + c.crops.length, 0)} crops available</span>
+                  </div>
+
+                  {/* Category cards grid */}
+                  <div className="grid grid-cols-3 gap-3 p-4">
+                    {categories.filter(c => c.crops.length > 0).map((cat) => {
+                      const cfg = CAT_CONFIG[cat.id] ?? { icon: "mdi:leaf", gradient: "from-green-500 to-teal-600", lightBg: "bg-green-50", textColor: "text-green-700" };
+                      const totalVarieties = cat.crops.reduce((s, cr) => s + cr.varieties, 0);
+                      return (
+                        <Link
+                          key={cat.id}
+                          to={`/products?category=${cat.id}`}
+                          className="group/card flex flex-col rounded-xl border border-border/30 overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
+                        >
+                          {/* Gradient icon banner */}
+                          <div className={`relative h-16 bg-gradient-to-br ${cfg.gradient} flex items-center justify-center overflow-hidden`}>
+                            <div className="absolute w-14 h-14 rounded-full bg-white/10 -top-4 -right-4" />
+                            <motion.div whileHover={{ rotate: 8, scale: 1.15 }} transition={{ type: "spring", stiffness: 300 }}>
+                              <Icon icon={cfg.icon} className="w-8 h-8 text-white drop-shadow" />
+                            </motion.div>
+                          </div>
+                          {/* Body */}
+                          <div className="p-3 flex flex-col gap-1.5 bg-white group-hover/card:bg-muted/30 transition-colors">
+                            <span className="font-display font-bold text-sm text-foreground group-hover/card:text-primary transition-colors leading-tight">{cat.name}</span>
+                            <div className="flex gap-1.5">
+                              <span className={`inline-flex items-center gap-0.5 text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${cfg.lightBg} ${cfg.textColor}`}>
+                                <Icon icon="mdi:sprout" className="w-2.5 h-2.5" />{cat.crops.length} crops
+                              </span>
+                              <span className={`inline-flex items-center gap-0.5 text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${cfg.lightBg} ${cfg.textColor}`}>
+                                <Icon icon="mdi:seed" className="w-2.5 h-2.5" />{totalVarieties} var.
+                              </span>
+                            </div>
+                            {/* Crop emoji chips */}
+                            <div className="flex flex-wrap gap-1 mt-0.5">
+                              {cat.crops.slice(0, 3).map(cr => (
+                                <span key={cr.id} className="text-[10px] bg-secondary/50 text-secondary-foreground rounded-full px-1.5 py-0.5 font-medium">
+                                  {CROP_EMOJI[cr.id] ?? "🌿"} {cr.name}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        </Link>
+                      );
+                    })}
+                  </div>
+
+                  {/* Footer CTA */}
+                  <div className="px-4 pb-4">
                     <Link
-                      key={cat.id}
-                      to={`/products?category=${cat.id}`}
-                      className={`flex items-center gap-3 px-4 py-2.5 hover:bg-primary/5 transition-colors group/item ${idx !== 0 ? "border-t border-border/20" : ""}`}
+                      to="/products"
+                      className="group/cta flex items-center justify-between w-full px-4 py-3 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold text-sm hover:shadow-lg hover:scale-[1.01] transition-all duration-200"
                     >
-                      <Sprout className="w-4 h-4 text-primary shrink-0" />
-                      <span className="font-medium text-foreground group-hover/item:text-primary transition-colors text-sm">{cat.name}</span>
+                      <span>{t("viewAllProducts")}</span>
+                      <motion.span animate={{ x: 0 }} whileHover={{ x: 4 }}>
+                        <ArrowRight className="w-4 h-4" />
+                      </motion.span>
                     </Link>
-                  ))}
-                  <Link
-                    to="/products"
-                    className="flex items-center justify-center gap-1.5 px-4 py-2.5 bg-primary/5 text-primary font-semibold text-sm hover:bg-primary/10 transition-colors border-t border-border/20"
-                  >
-                    {t("viewAllProducts")} <ArrowRight className="w-3.5 h-3.5" />
-                  </Link>
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>

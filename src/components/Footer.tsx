@@ -111,9 +111,9 @@ export default function Footer() {
                 </div>
                 <div>
                   <p className="text-xs text-primary-foreground/50 mb-0.5">Email</p>
-                  <a href="mailto:info.sanapnursery@gmail.com" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors block">
-                    info.sanapnursery@gmail.com
-                  </a>
+                  <a href="mailto:info@sanapnurseryindia.com" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors block">info@sanapnurseryindia.com</a>
+                  <a href="mailto:admin@sanapnurseryindia.com" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors block">admin@sanapnurseryindia.com</a>
+                  <a href="mailto:sales@sanapnurseryindia.com" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors block">sales@sanapnurseryindia.com</a>
                 </div>
               </li>
               <li className="flex items-start gap-3">
@@ -122,7 +122,7 @@ export default function Footer() {
                 </div>
                 <div>
                   <p className="text-xs text-primary-foreground/50 mb-0.5">Address</p>
-                  <span className="text-primary-foreground/80">Near MUHS, Tal. Dindori, Dist. Nashik - 422 004, Maharashtra, India</span>
+                  <span className="text-primary-foreground/80">Next to Amogha Vidhnyan Vidhyalaya, Preeti Dinesh Road, Near MUHS, Tal. Dindori, Dist. Nashik, Maharashtra, India</span>
                 </div>
               </li>
             </ul>

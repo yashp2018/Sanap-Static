@@ -1,7 +1,9 @@
-import { motion } from "framer-motion";
+import { useRef } from "react";
+import { motion, useScroll, useTransform } from "framer-motion";
 import { Link } from "react-router-dom";
 import { ArrowRight, CheckCircle, Droplet, Thermometer, Sun } from "lucide-react";
 import processImage from "@/assets/img/Process.png";
+import processHero from "@/assets/Process-1.png";
 
 const processSteps = [
   { step: 1, title: "Preparation of Seedlings", desc: "Healthy rootstock and scion seedlings are carefully prepared for the grafting process." },
@@ -26,31 +28,68 @@ const processSteps = [
   { step: 11, title: "Ready for Dispatch (Day 15)", desc: "Fully healed and hardened grafted plants are inspected and prepared for dispatch." },
 ];
 
+function ParallaxHero() {
+  const ref = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
+  const bgY = useTransform(scrollYProgress, [0, 1], ["0%", "25%"]);
+  return (
+    <motion.div
+      ref={ref}
+      className="absolute inset-0 w-full"
+      style={{ y: bgY, height: "120%", top: "-10%" }}
+    >
+      <img
+        src={processHero}
+        alt="Sanap Hi-Tech Nursery Process"
+        className="w-full h-full object-cover object-center"
+      />
+    </motion.div>
+  );
+}
+
 export default function Process() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="gradient-hero text-primary-foreground py-20 md:py-32">
-        <div className="container-nursery">
+      <section className="relative flex items-center justify-center overflow-hidden" style={{ height: "clamp(500px, 70vh, 650px)" }}>
+        <ParallaxHero />
+        {/* Dark overlay */}
+        <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, rgba(0,0,0,0.20) 0%, rgba(0,0,0,0.55) 100%)" }} />
+        {/* Content */}
+        <div className="container-nursery relative z-10 flex items-center justify-center h-full">
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
-            className="max-w-4xl mx-auto text-center"
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            className="max-w-3xl w-full text-center"
           >
             <motion.span
-              initial={{ opacity: 0, scale: 0.5 }}
+              initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.2 }}
-              className="inline-block bg-green-900 text-green-100 border border-green-700 rounded-full px-6 py-2 text-sm font-semibold mb-6"
+              className="inline-flex items-center gap-2 rounded-full px-6 py-2 text-sm font-semibold mb-5 text-white border border-white/30"
+              style={{ background: "rgba(255,255,255,0.15)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)" }}
             >
               Our Methodology
             </motion.span>
-            <h1 className="font-display text-4xl md:text-6xl font-bold mb-6">
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.35, duration: 0.7 }}
+              className="font-display text-5xl md:text-7xl font-bold text-white mb-5"
+              style={{ textShadow: "0 2px 30px rgba(0,0,0,0.6), 0 1px 6px rgba(0,0,0,0.4)" }}
+            >
               Grafting Process
-            </h1>
-            <p className="text-xl md:text-2xl text-primary-foreground/90 leading-relaxed">
+            </motion.h1>
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5, duration: 0.7 }}
+              className="text-lg md:text-xl leading-relaxed text-white/90 max-w-xl mx-auto"
+              style={{ textShadow: "0 1px 8px rgba(0,0,0,0.6)" }}
+            >
               A detailed 11-step process ensuring 98%+ success rate in grafted seedlings
-            </p>
+            </motion.p>
           </motion.div>
         </div>
       </section>

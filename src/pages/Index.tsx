@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowRight, Medal, Users, Truck, Sprout, ShieldCheck, FlaskConical, Clock3, Star, Quote, ChevronLeft, ChevronRight, Trophy, Dna, PackageCheck, BadgeDollarSign, Leaf, CheckCircle2, HeartHandshake, MapPin } from "lucide-react";
+import { Icon } from "@iconify/react";
 import heroVideo from "@/assets/Hero-nursery.mp4";
 import ProductCard from "@/components/ProductCard";
 import { useCountUp } from "@/hooks/useCountUp";
@@ -107,6 +108,51 @@ const galleryImages = [
   { src: img10, category: "Seminar", title: "Agricultural Workshop" },
   { src: img11, category: "Nursery", title: "Healthy Seedlings" },
 ];
+
+// ── Category card config ──────────────────────────────────────────────────────
+const CATEGORY_CONFIG: Record<string, { icon: string; gradient: string }> = {
+  vegetables: {
+    icon: "mdi:carrot",
+    gradient: "bg-gradient-to-br from-green-500 to-emerald-600",
+  },
+  fruits: {
+    icon: "mdi:fruit-watermelon",
+    gradient: "bg-gradient-to-br from-orange-400 to-yellow-500",
+  },
+  flowers: {
+    icon: "mdi:flower",
+    gradient: "bg-gradient-to-br from-pink-500 to-purple-500",
+  },
+  "other-plants": {
+    icon: "mdi:tree",
+    gradient: "bg-gradient-to-br from-emerald-600 to-green-800",
+  },
+  default: {
+    icon: "mdi:leaf",
+    gradient: "bg-gradient-to-br from-green-500 to-teal-600",
+  },
+};
+
+// ── Per-crop emoji chips ───────────────────────────────────────────────────────
+const CROP_EMOJI: Record<string, string> = {
+  tomato:      "🍅",
+  chili:       "🌶️",
+  brinjal:     "🍆",
+  capsicum:    "🫑",
+  cucumber:    "🥒",
+  watermelon:  "🍉",
+  cabbage:     "🥬",
+  cauliflower: "🥦",
+  bittergourd: "🌿",
+  papaya:      "🍈",
+  marigold:    "🌸",
+  mango:       "🥭",
+  banana:      "🍌",
+  pomegranate: "🍎",
+  rose:        "🌹",
+  jasmine:     "🌼",
+  lotus:       "🪷",
+};
 
 function StatCard({ stat, label }: { stat: typeof stats[0]; label: string }) {
   const { count, ref } = useCountUp(stat.value);
@@ -304,42 +350,91 @@ export default function Index() {
             <p className="text-muted-foreground max-w-xl mx-auto">{t("categoriesDesc")}</p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
             {apiCategories.map((cat, i) => {
               const catCrops = apiCrops.filter(c => c.category_slug === cat.slug);
+              const totalVarieties = catCrops.reduce((s, c) => s + Number(c.varieties), 0);
+              const cfg = CATEGORY_CONFIG[cat.slug] ?? CATEGORY_CONFIG["default"];
+              const cropChips = catCrops.slice(0, 4).map(c => ({
+                name: c.name,
+                emoji: CROP_EMOJI[c.slug] ?? "🌿",
+              }));
               return (
-              <motion.div
-                key={cat.id}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.15 }}
-                viewport={{ once: true }}
-              >
-                <Link
-                  to={`/products?category=${cat.slug}`}
-                  className="block bg-card rounded-2xl p-8 shadow-card hover:shadow-elevated transition-all hover:-translate-y-2 group border border-border/50"
+                <motion.div
+                  key={cat.id}
+                  initial={{ opacity: 0, y: 40 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.12, type: "spring", stiffness: 80 }}
+                  viewport={{ once: true }}
                 >
-                  <div className="w-14 h-14 rounded-2xl gradient-cta flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
-                    <Leaf className="w-7 h-7 text-primary-foreground" />
-                  </div>
-                  <h3 className="font-display text-2xl font-bold text-foreground mb-2 group-hover:text-primary transition-colors">
-                    {cat.name}
-                  </h3>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    {catCrops.length} {t("crops")} · {catCrops.reduce((s, c) => s + Number(c.varieties), 0)} {t("varietiesAvailable")}
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {catCrops.slice(0, 4).map((crop) => (
-                      <span key={crop.id} className="text-xs bg-secondary/50 text-secondary-foreground rounded-full px-3 py-1.5 font-medium flex items-center gap-1">
-                        <Sprout className="w-3 h-3" /> {crop.name}
-                      </span>
-                    ))}
-                  </div>
-                  <div className="mt-5 text-sm font-semibold text-primary flex items-center gap-1 group-hover:gap-2 transition-all">
-                    {t("browseCategory")} <ArrowRight className="w-4 h-4" />
-                  </div>
-                </Link>
-              </motion.div>
+                  <Link
+                    to={`/products?category=${cat.slug}`}
+                    className="group relative flex flex-col bg-card rounded-3xl overflow-hidden border border-border/40 shadow-card hover:shadow-elevated transition-all duration-300 hover:-translate-y-2"
+                    style={{ boxShadow: undefined }}
+                  >
+                    {/* Gradient top banner */}
+                    <div className={`relative h-36 flex items-center justify-center ${cfg.gradient} overflow-hidden`}>
+                      {/* Decorative blurred circle */}
+                      <div className="absolute w-32 h-32 rounded-full bg-white/10 -top-8 -right-8" />
+                      <div className="absolute w-20 h-20 rounded-full bg-white/10 bottom-0 left-4" />
+                      {/* Large circular icon container */}
+                      <motion.div
+                        whileHover={{ rotate: 8, scale: 1.12 }}
+                        transition={{ type: "spring", stiffness: 300 }}
+                        className="relative z-10 w-20 h-20 rounded-full bg-white/20 border-2 border-white/40 flex items-center justify-center shadow-lg backdrop-blur-sm"
+                      >
+                        <Icon icon={cfg.icon} className="w-10 h-10 text-white drop-shadow" />
+                      </motion.div>
+                      {/* Gradient border glow on hover */}
+                      <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${cfg.gradient} mix-blend-overlay`} />
+                    </div>
+
+                    {/* Card body */}
+                    <div className="flex flex-col flex-1 p-6">
+                      <h3 className="font-display text-xl font-bold text-foreground mb-1 group-hover:text-primary transition-colors">
+                        {cat.name}
+                      </h3>
+
+                      {/* Stats row */}
+                      <div className="flex items-center gap-3 mb-4">
+                        <span className="inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground bg-muted rounded-full px-2.5 py-1">
+                          <Icon icon="mdi:sprout" className="w-3.5 h-3.5 text-primary" />
+                          {catCrops.length} Crops
+                        </span>
+                        <span className="inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground bg-muted rounded-full px-2.5 py-1">
+                          <Icon icon="mdi:seed" className="w-3.5 h-3.5 text-primary" />
+                          {totalVarieties} Varieties
+                        </span>
+                      </div>
+
+                      {/* Crop chips with emoji */}
+                      <div className="flex flex-wrap gap-1.5 mb-5">
+                        {cropChips.map((chip) => (
+                          <span
+                            key={chip.name}
+                            className="inline-flex items-center gap-1 text-xs bg-secondary/60 text-secondary-foreground rounded-full px-2.5 py-1 font-medium border border-border/30 hover:bg-secondary transition-colors"
+                          >
+                            <span>{chip.emoji}</span> {chip.name}
+                          </span>
+                        ))}
+                      </div>
+
+                      {/* CTA */}
+                      <div className="mt-auto flex items-center gap-1.5 text-sm font-bold text-primary group-hover:gap-3 transition-all duration-200">
+                        <span className="relative">
+                          {t("browseCategory")}
+                          <span className="absolute -bottom-0.5 left-0 w-0 group-hover:w-full h-0.5 bg-primary transition-all duration-300 rounded-full" />
+                        </span>
+                        <motion.span
+                          animate={{ x: 0 }}
+                          whileHover={{ x: 4 }}
+                        >
+                          <ArrowRight className="w-4 h-4" />
+                        </motion.span>
+                      </div>
+                    </div>
+                  </Link>
+                </motion.div>
               );
             })}
           </div>

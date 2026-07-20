@@ -1,6 +1,7 @@
-import { useState } from "react";
-import { motion } from "framer-motion";
+import { useState, useRef } from "react";
+import { motion, useScroll, useTransform } from "framer-motion";
 import { ChevronDown } from "lucide-react";
+import infraHero from "@/assets/Infrasturcture.png";
 
 const infrastructureItems = [
   {
@@ -50,24 +51,73 @@ const infrastructureItems = [
   }
 ];
 
+function ParallaxHero() {
+  const ref = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
+  const bgY = useTransform(scrollYProgress, [0, 1], ["0%", "25%"]);
+  return (
+    <motion.div
+      ref={ref}
+      className="absolute inset-0 w-full"
+      style={{ y: bgY, height: "120%", top: "-10%" }}
+    >
+      <img
+        src={infraHero}
+        alt="Sanap Hi-Tech Nursery Infrastructure"
+        className="w-full h-full object-cover object-center"
+      />
+    </motion.div>
+  );
+}
+
 export default function Infrastructure() {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative h-[60vh] flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary-dark to-primary-light" />
-        <div className="absolute inset-0 bg-black/40" />
-        <div className="container-nursery relative z-10 text-center">
-          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}>
-            <p className="text-green-300 text-sm font-semibold tracking-widest uppercase mb-3">World-Class Facilities</p>
-            <h1 className="font-display text-4xl md:text-6xl font-bold text-white mb-4">
-              Sanap Hi-Tech Nursery's<br />Infrastructure
-            </h1>
-            <p className="text-white/80 text-lg max-w-2xl mx-auto">
+      <section className="relative flex items-center justify-center overflow-hidden" style={{ height: "clamp(500px, 70vh, 650px)" }}>
+        {/* Parallax image */}
+        <ParallaxHero />
+
+        {/* Dark overlay */}
+        <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, rgba(0,0,0,0.20) 0%, rgba(0,0,0,0.55) 100%)" }} />
+
+        {/* Content */}
+        <div className="container-nursery relative z-10 flex items-center justify-center h-full">
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            className="max-w-3xl w-full text-center"
+          >
+            <motion.p
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.2 }}
+              className="inline-flex items-center gap-2 rounded-full px-6 py-2 text-sm font-semibold mb-5 text-white border border-white/30"
+              style={{ background: "rgba(255,255,255,0.15)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)" }}
+            >
+              World-Class Facilities
+            </motion.p>
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.35, duration: 0.7 }}
+              className="font-display text-5xl md:text-7xl font-bold text-white mb-5"
+              style={{ textShadow: "0 2px 30px rgba(0,0,0,0.6), 0 1px 6px rgba(0,0,0,0.4)" }}
+            >
+              Our Infrastructure
+            </motion.h1>
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5, duration: 0.7 }}
+              className="text-lg md:text-xl leading-relaxed text-white/90 max-w-xl mx-auto"
+              style={{ textShadow: "0 1px 8px rgba(0,0,0,0.6)" }}
+            >
               28+ years of excellence backed by cutting-edge technology and modern facilities
-            </p>
+            </motion.p>
           </motion.div>
         </div>
       </section>

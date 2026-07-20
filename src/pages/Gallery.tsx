@@ -1,6 +1,7 @@
-import { motion } from "framer-motion";
-import { useState } from "react";
+import { motion, useScroll, useTransform } from "framer-motion";
+import { useState, useRef } from "react";
 import { X, ChevronLeft, ChevronRight, Camera, Tag } from "lucide-react";
+import galleryHero from "@/assets/Gallery1.png";
 
 // Gallery Images
 import customerVisit from "@/assets/img/Customer-visit.jpeg";
@@ -33,6 +34,83 @@ const galleryImages = [
 
 const categories = ["All", "Nursery", "Customer Visit", "Seminar"];
 
+function GalleryHero() {
+  const ref = useRef<HTMLElement>(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
+  const bgY = useTransform(scrollYProgress, [0, 1], ["0%", "25%"]);
+
+  return (
+    <section
+      ref={ref}
+      className="relative flex items-center justify-center overflow-hidden"
+      style={{ height: "clamp(500px, 70vh, 650px)" }}
+    >
+      {/* Parallax background */}
+      <motion.div
+        className="absolute inset-0 w-full"
+        style={{ y: bgY, height: "120%", top: "-10%" }}
+      >
+        <img
+          src={galleryHero}
+          alt="Sanap Nursery greenhouse"
+          className="w-full h-full object-cover object-center"
+        />
+      </motion.div>
+
+      {/* Dark neutral overlay */}
+      <div
+        className="absolute inset-0"
+        style={{ background: "linear-gradient(to bottom, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.55) 100%)" }}
+      />
+
+      {/* Content — perfectly centred */}
+      <div className="container-nursery relative z-10 flex items-center justify-center h-full">
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="max-w-3xl w-full text-center"
+        >
+          {/* Badge — glassmorphism */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.7 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.25, duration: 0.5 }}
+            className="inline-flex items-center gap-2 rounded-full px-6 py-2 text-sm font-semibold mb-5 text-white border border-white/30"
+            style={{
+              background: "rgba(255,255,255,0.15)",
+              backdropFilter: "blur(12px)",
+              WebkitBackdropFilter: "blur(12px)",
+            }}
+          >
+            <Camera className="w-4 h-4" /> Our Journey in Pictures
+          </motion.div>
+
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.35, duration: 0.7 }}
+            className="font-display text-5xl md:text-7xl font-bold mb-5 text-white"
+            style={{ textShadow: "0 2px 30px rgba(0,0,0,0.6), 0 1px 6px rgba(0,0,0,0.4)" }}
+          >
+            Gallery
+          </motion.h1>
+
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5, duration: 0.7 }}
+            className="text-lg md:text-xl leading-relaxed text-white/90 max-w-xl mx-auto"
+            style={{ textShadow: "0 1px 8px rgba(0,0,0,0.6)" }}
+          >
+            Explore our nursery, customer visits, and farmer training seminars through our photo collection
+          </motion.p>
+        </motion.div>
+      </div>
+    </section>
+  );
+}
+
 export default function Gallery() {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -58,33 +136,10 @@ export default function Gallery() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="gradient-hero text-primary-foreground py-20 md:py-32">
-        <div className="container-nursery">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="max-w-4xl mx-auto text-center"
-          >
-            <motion.div
-              initial={{ opacity: 0, scale: 0.5 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.2 }}
-              className="inline-flex items-center gap-2 bg-green-900 text-green-100 border border-green-700 rounded-full px-6 py-2 text-sm font-semibold mb-6"
-            >
-              <Camera className="w-4 h-4" /> Our Journey in Pictures
-            </motion.div>
-            <h1 className="font-display text-4xl md:text-6xl font-bold mb-6">
-              Gallery
-            </h1>
-            <p className="text-xl md:text-2xl text-primary-foreground/90 leading-relaxed">
-              Explore our nursery, customer visits, and farmer training seminars through our photo collection
-            </p>
-          </motion.div>
-        </div>
-      </section>
+      <GalleryHero />
 
       {/* Category Filter */}
-      <section className="py-12 surface-warm">
+      <section className="py-10 bg-background border-b border-border">
         <div className="container-nursery">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
