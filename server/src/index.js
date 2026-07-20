@@ -12,7 +12,7 @@ const isProd = process.env.NODE_ENV === "production";
 
 // ── Middleware ────────────────────────────────────────────────
 app.use(cors({
-  origin:      process.env.FRONTEND_ORIGIN || "http://localhost:8080",
+  origin:      process.env.FRONTEND_ORIGIN || "https://sanap-web.onrender.com/",
   credentials: true,
 }));
 
@@ -37,13 +37,12 @@ app.use("/api/orders",     require("./routes/orders"));
 app.use("/api/admin",      require("./routes/admin"));
 
 // ── Serve frontend in production ──────────────────────────────
-if (isProd) {
-  const distPath = path.join(__dirname, "../../dist");
-  app.use(express.static(distPath));
-  app.get("*", (_req, res) => {
-    res.sendFile(path.join(distPath, "index.html"));
+app.get("/", (_req, res) => {
+  res.json({
+    success: true,
+    message: "Sanap Backend API Running 🚀"
   });
-}
+});
 
 // ── 404 fallback (dev only) ───────────────────────────────────
 if (!isProd) {
