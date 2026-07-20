@@ -11,8 +11,18 @@ const PORT = process.env.PORT || 5000;
 const isProd = process.env.NODE_ENV === "production";
 
 // ── Middleware ────────────────────────────────────────────────
+const allowedOrigins = [
+  process.env.FRONTEND_ORIGIN,
+  "https://sanap-frontend.onrender.com",
+  "http://localhost:8080",
+  "http://localhost:5173",
+].filter(Boolean);
+
 app.use(cors({
-  origin:      process.env.FRONTEND_ORIGIN || "https://sanap-frontend.onrender.com",
+  origin: (origin, cb) => {
+    if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
+    cb(new Error("Not allowed by CORS"));
+  },
   credentials: true,
 }));
 
